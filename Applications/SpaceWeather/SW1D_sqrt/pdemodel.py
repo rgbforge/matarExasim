@@ -351,7 +351,7 @@ def EUVsource1D(u, x, t, mu, eta):
         
         slope0 = 1 + AFAC*(F10p7_mean-80)
         Islope = 0.5*(1+tanh(1000*(slope0-0.8)))
-        slopeIntensity =  slope0*Islope + 0.8*(1-Islope)
+        slopeIntensity = slope0*Islope + 0.8*(1-Islope)
         Intensity0 = F74113*slopeIntensity
         Intensity = Intensity0*exp(-tau)
         

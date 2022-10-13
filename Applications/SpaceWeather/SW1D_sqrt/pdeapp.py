@@ -1,49 +1,56 @@
-"""
-Module that runs GITM 1D (reduced stiffness formulation) model.
-
-Authors: Opal Issan
-Version: Sept 9, 2022
-"""
 # import external modules
 import os, sympy
+import numpy as np
 from numpy import *
 from pdeparams import pdeparams
 
 # Add Exasim to Python search path
-#cdir = '/Users/oissan/PycharmProjects/Exasim/Applications/SpaceWeather/SW1D_sqrt';
-cdir = os.getcwd(); ii = cdir.find("Exasim");
+cdir = os.getcwd()
+ii = cdir.find("Exasim")
 exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
 
 # import internal modules
 import Preprocessing, Postprocessing, Gencode, Mesh
 
-# Create pde object and mesh object
-pde, mesh = Preprocessing.initializeexasim()
+samples = np.load(file="sensitivity/samples/samples.npy")
 
-# Define a PDE model: governing equations and boundary conditions
-pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
-pde['modelfile'] = "pdemodel"  # name of a file defining the PDE model
+for ii in range(np.shape(samples)[1]):
+    # Create pde object and mesh object
+    pde, mesh = Preprocessing.initializeexasim()
 
-# Choose computing platform and set number of processors
-pde['platform'] = "cpu"
-pde['mpiprocs'] = 1  # number of MPI processors
+    # Define a PDE model: governing equations and boundary conditions
+    pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
+    pde['modelfile'] = "pdemodel"  # name of a file defining the PDE model
 
-pde, mesh = pdeparams(pde,mesh)
+    # Choose computing platform and set number of processors
+    pde['platform'] = "cpu"
+    pde['mpiprocs'] = 1  # number of MPI processors
 
-# search compilers and set options
-pde = Gencode.setcompilers(pde);
+    # run executable file to compute solution and store it in dataout folder
+    pde, mesh = pdeparams(pde, mesh)
+    # EUV efficiency
+    pde["physicsparam"][12] = samples[0, ii]
+    # thermal conductivity
+    pde["physicsparam"][12] = samples[0, ii]
 
-# generate input files and store them in datain folder
-pde, mesh, master, dmd = Preprocessing.preprocessing(pde,mesh);
+    # search compilers and set options
+    pde = Gencode.setcompilers(pde)
 
-# generate source codes and store them in app folder
-Gencode.gencode(pde);
+    # generate input files and store them in datain folder
+    pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 
-# compile source codes to build an executable file and store it in app folder
-compilerstr = Gencode.compilecode(pde);
+    # generate source codes and store them in app folder
+    Gencode.gencode(pde)
 
-# run executable file to compute solution and store it in dataout folder
-runstr = Gencode.runcode(pde,1);
+    # compile source codes to build an executable file and store it in app folder
+    compilerstr = Gencode.compilecode(pde)
 
-# get solution from output files in dataout folder
-sol = Postprocessing.fetchsolution(pde,master,dmd,"dataout");
+    runstr = Gencode.runcode(pde, 1)
+    #
+    # # get solution from output files in dataout folder
+    sol = Postprocessing.fetchsolution(pde, master, dmd, "dataout")
+    np.save("sensitivity/sol"+str(ii), sol)
+
+
+
+
