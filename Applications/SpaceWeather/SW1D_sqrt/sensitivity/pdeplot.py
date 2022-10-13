@@ -36,7 +36,7 @@ pde, mesh = pdeparams(pde, mesh)
 
 EUV_vec = np.linspace(0.3, 1.5, 5)
 
-sol1 = np.load("sensitivity/solutions/test_EUV/sol0.npy")
+sol1 = np.load("solutions/test_EUV/sol0.npy")
 
 dgnodes = Preprocessing.createdgnodes(mesh["p"],
                                       mesh["t"],

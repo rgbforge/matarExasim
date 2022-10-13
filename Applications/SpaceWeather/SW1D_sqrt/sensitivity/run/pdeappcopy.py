@@ -6,15 +6,13 @@ from pdeparams import pdeparams
 
 # Add Exasim to Python search path
 cdir = os.getcwd()
-ii = cdir.find("Exasim")
-exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
+exec(open(cdir[0:(cdir.find("Exasim") + 6)] + "/Installation/setpath.py").read())
 
 # import internal modules
 import Preprocessing, Postprocessing, Gencode, Mesh
 
-samples = np.load(file="sensitivity/samples/samples.npy")
-
-for ii in range(np.shape(samples)[1]):
+EUV_vec = np.linspace(0.3, 1.5, 5)
+for ii in range(5):
     # Create pde object and mesh object
     pde, mesh = Preprocessing.initializeexasim()
 
@@ -28,10 +26,7 @@ for ii in range(np.shape(samples)[1]):
 
     # run executable file to compute solution and store it in dataout folder
     pde, mesh = pdeparams(pde, mesh)
-    # EUV efficiency
-    pde["physicsparam"][12] = samples[0, ii]
-    # thermal conductivity
-    pde["physicsparam"][12] = samples[0, ii]
+    pde["physicsparam"][12] = EUV_vec[ii]
 
     # search compilers and set options
     pde = Gencode.setcompilers(pde)
@@ -49,8 +44,4 @@ for ii in range(np.shape(samples)[1]):
     #
     # # get solution from output files in dataout folder
     sol = Postprocessing.fetchsolution(pde, master, dmd, "dataout")
-    np.save("sensitivity/sol"+str(ii), sol)
-
-
-
-
+    np.save("sensitivity/sol" + str(ii), sol)

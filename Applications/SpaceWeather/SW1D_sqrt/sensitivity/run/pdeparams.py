@@ -1,10 +1,10 @@
 from numpy import *
 from pandas import *
 from math import *
-import os
-from mesh1D_adapted import mesh1D_adapted
+from Applications.SpaceWeather.SW1D_sqrt.Python.mesh1D_adapted import mesh1D_adapted
 from astropy.constants import G, k_B, h, M_earth, R_earth
 import astropy.units as u
+
 
 def pdeparams(pde, mesh):
     # TODO: HOW CAN I EXPLICITLY VARY MU0?
@@ -48,9 +48,9 @@ def pdeparams(pde, mesh):
     Ttop = 1000
 
     # Read input csv files
-    EUV = read_csv('inputs/euv.csv', header=None)
-    orbits = read_csv('inputs/orbits.csv')
-    neutrals = read_csv('inputs/neutrals.csv', delimiter=";")
+    EUV = read_csv('../inputs/euv.csv', header=None)
+    orbits = read_csv('../inputs/orbits.csv')
+    neutrals = read_csv('../inputs/neutrals.csv', delimiter=";")
 
     # Planet information
     iPlanet = orbits.values[:, 0] == planet
