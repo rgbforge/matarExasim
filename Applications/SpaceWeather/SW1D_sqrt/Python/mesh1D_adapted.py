@@ -1,5 +1,7 @@
 """Module to create an adapted mesh.
-# TODO: comments. """
+# TODO: comments.
+Latest update: Oct 13th, 2022 [OI]
+"""
 import numpy as np
 from scipy.optimize import fsolve
 
@@ -17,9 +19,8 @@ def mesh1D_adapted(r1, r2, nx):
 
     # Calculate mesh ratio
     c = 1 - dlay / dwall
-    # TODO: what is this 1.1?
-    rat = fsolve(lambda x_val: scalingfun(x_val, nx, c), 1.1)
-    rat = rat[0]
+    # solve optimization problem
+    rat = fsolve(func=lambda x_val: scalingfun(x_val, n=nx, c=c), x0=1.1)[0]
 
     xv = np.zeros(nx + 1)
     xv[1] = dwall
@@ -40,9 +41,6 @@ def scalingfun(x, n, c):
     :param c: ??
     :return: ??
     """
-    F = c
-
     for i in range(1, n):
-        F += x ** i
-
-    return F
+        c += x ** i
+    return c

@@ -1,13 +1,40 @@
+""" Module including the 1D GITM sqrt formulation flux and source functions.
+Latest update: Oct 13th, 2022. [OI]
+"""
 from numpy import array, reshape, hstack
 from sympy import exp, sqrt, log, pi, tanh, sin, cos
 
 
 def mass(u, q, w, v, x, t, mu, eta):
+    """# todo: why do we need all these values as inputs?
+
+    :param u:
+    :param q:
+    :param w:
+    :param v:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :return:
+    """
     m = array([1.0, 1.0, 1.0])
     return m
 
 
 def flux(u, q, w, v, x, t, mu, eta):
+    """
+
+    :param u:
+    :param q:
+    :param w:
+    :param v:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :return:
+    """
     fi = fluxInviscid(u, mu)
     fv = fluxViscous(u, q, x, mu)
 
@@ -16,6 +43,18 @@ def flux(u, q, w, v, x, t, mu, eta):
 
 
 def fluxWall(u, q, w, v, x, t, mu, eta):
+    """
+
+    :param u:
+    :param q:
+    :param w:
+    :param v:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :return:
+    """
     fi = fluxInviscidWall(u, mu)
     fv = fluxViscousWall(u, q, x, mu)
 
@@ -24,6 +63,18 @@ def fluxWall(u, q, w, v, x, t, mu, eta):
 
 
 def source(u, q, w, v, x, t, mu, eta):
+    """
+
+    :param u:
+    :param q:
+    :param w:
+    :param v:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :return:
+    """
     x1 = x[0]
     c0 = mu[13]
 
@@ -82,6 +133,21 @@ def source(u, q, w, v, x, t, mu, eta):
 
 
 def fbou(u, q, w, v, x, t, mu, eta, uhat, n, tau):
+    """
+
+    :param u:
+    :param q:
+    :param w:
+    :param v:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :param uhat:
+    :param n:
+    :param tau:
+    :return:
+    """
     # tau = gettau(uhat, mu, eta, n)
     tau = array([0.0, 0.0, 0.0])
 
@@ -122,6 +188,13 @@ def ubou(u, q, w, v, x, t, mu, eta, uhat, n, tau):
 
 
 def initu(x, mu, eta):
+    """
+
+    :param x:
+    :param mu:
+    :param eta:
+    :return:
+    """
     x1 = x[0]
 
     Fr = mu[3]
@@ -145,6 +218,25 @@ def initu(x, mu, eta):
 
 
 def stab(u1, q1, w1, v1, x, t, mu, eta, uhat, n, tau, u2, q2, w2, v2):
+    """
+
+    :param u1:
+    :param q1:
+    :param w1:
+    :param v1:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :param uhat:
+    :param n:
+    :param tau:
+    :param u2:
+    :param q2:
+    :param w2:
+    :param v2:
+    :return:
+    """
     uhat = 0.5 * (u1 + u2)
     tau = gettau(uhat, mu, eta, n)
 
@@ -156,6 +248,12 @@ def stab(u1, q1, w1, v1, x, t, mu, eta, uhat, n, tau, u2, q2, w2, v2):
 
 
 def fluxInviscid(u, mu):
+    """
+
+    :param u:
+    :param mu:
+    :return:
+    """
     gam = mu[0]
     r = u[0]
     srvx = u[1]
@@ -174,6 +272,12 @@ def fluxInviscid(u, mu):
 
 
 def fluxInviscidWall(u, mu):
+    """
+
+    :param u:
+    :param mu:
+    :return:
+    """
     gam = mu[0]
     r = u[0]
     rho = exp(r)
@@ -187,6 +291,14 @@ def fluxInviscidWall(u, mu):
 
 
 def fluxViscous(u, q, x, mu):
+    """
+
+    :param u:
+    :param q:
+    :param x:
+    :param mu:
+    :return:
+    """
     x1 = x[0]
     c0 = mu[13]
 
@@ -226,6 +338,14 @@ def fluxViscous(u, q, x, mu):
 
 
 def fluxViscousWall(u, q, x, mu):
+    """
+
+    :param u:
+    :param q:
+    :param x:
+    :param mu:
+    :return:
+    """
     x1 = x[0]
     c0 = mu[13]
 
@@ -261,6 +381,14 @@ def fluxViscousWall(u, q, x, mu):
 
 
 def gettau(uhat, mu, eta, n):
+    """
+
+    :param uhat:
+    :param mu:
+    :param eta:
+    :param n:
+    :return:
+    """
     gam = mu[0]
     Gr = mu[1]
     Pr = mu[2]
@@ -290,6 +418,15 @@ def gettau(uhat, mu, eta, n):
 
 
 def EUVsource1D(u, x, t, mu, eta):
+    """
+
+    :param u:
+    :param x:
+    :param t:
+    :param mu:
+    :param eta:
+    :return:
+    """
     r = x[0]
 
     gam = mu[0]
