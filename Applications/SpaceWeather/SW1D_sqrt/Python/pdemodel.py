@@ -470,6 +470,7 @@ def EUVsource1D(u, x, t, mu, eta):
     y = sqrt(Xp / 2) * abs(cosChi)
 
     Ierf = 0.5 * (1 + tanh(1000 * (8 - y)))
+    # todo: should these values be specified in pdeparams?
     a_erf = 1.06069630
     b_erf = 0.55643831
     c_erf = 1.06198960

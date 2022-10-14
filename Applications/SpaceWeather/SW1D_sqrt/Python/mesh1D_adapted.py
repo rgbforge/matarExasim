@@ -20,7 +20,7 @@ def mesh1D_adapted(r1, r2, nx):
     # Calculate mesh ratio
     c = 1 - dlay / dwall
     # solve optimization problem
-    rat = fsolve(func=lambda x_val: scalingfun(x_val, n=nx, c=c), x0=1.1)[0]
+    rat = fsolve(func=lambda x_val: scaling_fun(x_val, n=nx, c=c), x0=1.1)[0]
 
     xv = np.zeros(nx + 1)
     xv[1] = dwall
@@ -33,7 +33,7 @@ def mesh1D_adapted(r1, r2, nx):
     return p, t
 
 
-def scalingfun(x, n, c):
+def scaling_fun(x, n, c):
     """??
 
     :param x: ??

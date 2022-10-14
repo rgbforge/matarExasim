@@ -60,13 +60,13 @@ def pdeparams(pde, mesh, parameters):
     # define physical quantities
     # universal gas constant (J/K*kg)
     R = k_B / m
-    # gravitational acceleration
+    # gravitational acceleration (m/s**2)
     g = G * M_earth / radius_in ** 2
     # rotation speed of Earth (1/s)
     omega = 2 * np.pi / period_day
     # specific heat capacity (J/K*kg)
     cp = gam * R / (gam - 1)
-    # reference scale height (meters)
+    # reference scale height (m)
     H0 = (R * parameters["temp_lower"] / g).decompose()
 
     # define reference quantities
@@ -74,7 +74,7 @@ def pdeparams(pde, mesh, parameters):
     v0 = np.sqrt(gam * R * parameters["temp_lower"]).decompose()
     # reference time scale (s)
     t0 = (H0 / v0)
-    # reference length scale ratio. mesh lower and upper bounds.
+    # reference length scale ratio (dimensionless): mesh lower and upper bounds.
     R0 = (radius_in / H0).decompose()
     R1 = (radius_out / H0).decompose()
     # reference dynamic viscosity (kg /m*s)
