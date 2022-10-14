@@ -2,7 +2,7 @@
 import numpy, os
 from numpy import pi
 
-# Add Exasim to Python search path
+# Add Exasim to python search path
 cdir = os.getcwd(); ii = cdir.find("Exasim");
 exec(open(cdir[0:(ii+6)] + "/Installation/setpath.py").read());
 

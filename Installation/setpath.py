@@ -1,8 +1,8 @@
 import sys, os
 
-# Add Exasim to Python search path
+# Add Exasim to python search path
 src = "src"; 
-srcdir = cdir[0:(ii+6)] + "/"  + src + "/Python";
+srcdir = cdir[0:(ii+6)] + "/"  + src + "/python";
 sys.path.append(cdir[0:(ii+6)] + '/Installation');
 sys.path.append(srcdir + '/Gencode');
 sys.path.append(srcdir + '/Mesh');
@@ -11,7 +11,7 @@ sys.path.append(srcdir + '/Postprocessing');
 sys.path.append(srcdir + '/Utilities');
 sys.path.append(cdir);
 
-# Set Python's PATH enviroment variable so that Exasim can call external programs
+# Set python's PATH enviroment variable so that Exasim can call external programs
 os.environ['PATH'] = "/usr/local/bin:/usr/bin:/opt/local/bin:/bin:/usr/sbin:/sbin";
 # Add more paths if neccesary
 os.environ['PATH'] = os.environ['PATH'] + ":/Applications/ParaView-5.8.1.app/Contents/MacOS"

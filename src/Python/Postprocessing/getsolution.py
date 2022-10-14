@@ -3,7 +3,7 @@ from numpy import *
 def getsolution(filename,dmd,npe):
 
     nproc = len(dmd);
-    if nproc==1:
+    if nproc == 1:
         fn = filename + "_np0.bin";
         UDG = fromfile(open(fn, "r"), dtype=float64);
         ne = len(dmd[0]['elempart'].flatten('F'));

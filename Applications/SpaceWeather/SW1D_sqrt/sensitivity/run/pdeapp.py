@@ -9,7 +9,7 @@ from astropy.constants import R_earth
 import astropy.units as u
 from pdeparams import pdeparams
 
-# Add Exasim package to Python search path
+# Add Exasim package to python search path
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
 exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())

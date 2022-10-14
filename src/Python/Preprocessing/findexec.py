@@ -34,7 +34,7 @@ def findexec(filename, version):
                 ii = a.find("/MacOS/" + filename);
                 newfilename = a[0:ii] + "/MacOS/" + filename;
                 print("Exasim found " + filename + " at " + newfilename + "\n");
-                print("Please open initializepde.py in the folder Exasim/" + version + "/Python/Preprocessing\n");
+                print("Please open initializepde.py in the folder Exasim/" + version + "/python/Preprocessing\n");
                 qstr1 = """ " """ + filename + """ " """;
                 qstr1 = qstr1.replace(" ", "");
                 qstr2 = """ " """ + newfilename + """ " """;
@@ -50,7 +50,7 @@ def findexec(filename, version):
 
             mystr = "Exasim could not find " + filename + " on your system.\n";
             mystr = mystr + "Please see the documentation to install " + filename + ".\n"
-            mystr = mystr + "After installing " + filename + ", open initializepde.py in the folder Exasim/" + version + "/Python/Preprocessing\n";
+            mystr = mystr + "After installing " + filename + ", open initializepde.py in the folder Exasim/" + version + "/python/Preprocessing\n";
             qstr1 = """ " """ + filename + """ " """;
             qstr1 = qstr1.replace(" ", "");
             newfilename = "/path/to/executable/" + filename;

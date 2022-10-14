@@ -4,7 +4,7 @@ Latest update: Oct 13th, 2022. [OI]
 import numpy as np
 from pandas import read_csv
 from math import ceil
-from Applications.SpaceWeather.SW1D_sqrt.Python.mesh1D_adapted import mesh1D_adapted
+from Applications.SpaceWeather.SW1D_sqrt.python.mesh1D_adapted import mesh1D_adapted
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
 import astropy.units as u
 
@@ -152,7 +152,7 @@ def pdeparams(pde, mesh, parameters):
          ])
 
     # store external parameters
-    pde['externalparam'] = np.hstack([lambda_EUV.value, crossSections[0, :], AFAC, F74113])
+    pde['externalparam'] = np.hstack([lambda_EUV.value, crossSections[0, :], AFAC, F74113.value])
 
     # set solver parameters
     pde['extStab'] = parameters["ext_stab"]

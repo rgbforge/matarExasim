@@ -2,14 +2,15 @@
 Latest update: Oct 13th, 2022. [OI]
 """
 # import external modules
-import os, sympy
+import os
+import sympy
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.constants import R_earth
 import astropy.units as u
 from pdeparams import pdeparams
 
-# Add Exasim package to Python search path
+# Add Exasim package to python search path
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
 exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
@@ -84,13 +85,13 @@ pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 Gencode.gencode(pde)
 
 # compile source codes to build an executable file and store it in app folder
-compilerstr = Gencode.compilecode(pde)
+compiler_str = Gencode.compilecode(pde)
 
 # todo: what is 1 here?
-runstr = Gencode.runcode(pde, 1)
+run_str = Gencode.runcode(pde, 1)
 
 # get solution from output files in dataout folder
-sol = Postprocessing.fetchsolution(pde, master, dmd, "dataout")
+sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
 
 # generate mesh nodes
 dgnodes = Preprocessing.createdgnodes(mesh["p"],

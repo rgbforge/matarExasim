@@ -2,7 +2,7 @@
 import numpy as np
 import os, sympy
 from numpy import *
-from pdeparams import pdeparams
+from run.pdeparams import pdeparams
 from astropy.constants import G, k_B, h, M_earth, R_earth
 import astropy.units as u
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ matplotlib.rc('font', **font)
 matplotlib.rc('xtick', labelsize=15)
 matplotlib.rc('ytick', labelsize=15)
 
-# Add Exasim to Python search path
+# Add Exasim to python search path
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
 exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())

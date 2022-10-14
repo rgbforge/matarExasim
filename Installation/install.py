@@ -4,7 +4,7 @@ import subprocess
 
 version = "src";
 cdir = os.getcwd(); ii = cdir.find("Exasim");
-versiondir = cdir[0:(ii+6)] + "/"  + version + "/Python";
+versiondir = cdir[0:(ii+6)] + "/"  + version + "/python";
 
 #sys.path.append(cdir[0:(ii+6)] + "/Installation");
 from findinstallexec import findinstallexec
