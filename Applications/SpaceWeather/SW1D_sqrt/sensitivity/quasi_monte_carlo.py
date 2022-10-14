@@ -18,8 +18,8 @@ mu0 = 8.063632e-5
 kappa0 = 0.02167
 
 # lower and upper bounds
-l_bounds = [0.2, kappa0*1E-2, mu0*1E-2, rho0*1E-1]
-u_bounds = [1.5, kappa0*1E2, mu0*1E2, rho0*1E1]
+l_bounds = [0.2, 1E-2, 1E-2, 1E-1]
+u_bounds = [1.5, 1E2, 1E2, 1E1]
 
 # scale and sample using Latin Hypercube Sampling (LHS)
 sample = qmc.scale(sample=qmc.LatinHypercube(d=d).random(n=N),
