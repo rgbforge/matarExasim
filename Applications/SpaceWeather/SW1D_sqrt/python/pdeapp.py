@@ -1,5 +1,5 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Oct 13th, 2022. [OI]
+Latest update: Oct 24th, 2022. [OI]
 """
 # import external modules
 import os
@@ -32,7 +32,7 @@ pde['mpiprocs'] = 1  # number of MPI processors
 # specify model input parameters for summer solstice.
 parameters = {
     "planet": "Earth",  # Planet
-    "species": "O",  # Set species (or "air" for mixture) # todo: (oxygen?)
+    "species": "O",  # Set species to oxygen, i.e. single species (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
