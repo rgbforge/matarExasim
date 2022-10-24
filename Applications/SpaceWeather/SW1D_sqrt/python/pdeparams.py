@@ -27,8 +27,13 @@ def pdeparams(pde, mesh, parameters):
     period_day = (float(orbits.values[orbits.values[:, 0] == parameters["planet"], 13]) * u.h).to(u.s)
     radius_in = R_earth + parameters["altitude_lower"]
     radius_out = R_earth + parameters["altitude_upper"]
-    declination_sun = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
-
+    # todo: declinationSun = asin(-sin(declinationSun0)*cos(2*pi*(Ndays+9)/365.24 + pi*0.0167*2*pi*(Ndays-3)/365.24));
+    declination_sun0 = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
+    # add the declanation of the sub
+    declination_sun = np.asin(-np.sin(declination_sun0) * np.cos(2 * np.pi * (parameters["day_of_year"] + 9)
+                                                                 / 365.24 + np.pi *
+                                                                 0.0167 * 2 * np.pi * (parameters["day_of_year"]
+                                                                                       - 3) / 365.24))
     # set species information
     species_euv = euv.values[4:, 1]
     i_species = np.where(neutrals.values[:, 0] == parameters["species"])[0]
@@ -45,13 +50,13 @@ def pdeparams(pde, mesh, parameters):
         # mass of neutrals (kg)
         m = (neutrals[i_species, 0][0] * amu)
         # reference density (kg/m^3)
-        rho0 = (neutrals[i_species, -1][0] * m) * (1/u.m**3)
+        rho0 = (neutrals[i_species, -1][0] * m) * (1 / u.m ** 3)
         # kappa exponential using empirical models
         expKappa = neutrals[i_species, 3][0]
         # reference thermal conductivity (J/m*K)
         kappa0 = (neutrals[i_species, 2][0] * (parameters["temp_lower"].value ** expKappa)) * u.J / (u.m * u.K)
         # photo absortion cross section (m^2) # todo: verify with jordi.
-        crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m**2
+        crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m ** 2
 
     lambda_d = 0.5 * (euv.values[0, 5:42] + euv.values[1, 5:42]) * 1e-10
     AFAC = euv.values[3, 5:42]
@@ -101,7 +106,7 @@ def pdeparams(pde, mesh, parameters):
     # dimensionless numbers
     # Grasshoff dimensionless number
     # todo: currently not dimensionless because of mu0
-    Gr = (g * H0 ** 3 / (mu0/rho0) ** 2).decompose()
+    Gr = (g * H0 ** 3 / (mu0 / rho0) ** 2).decompose()
     # Prandtl dimensionless number
     # todo: currently not dimensionless because of mu0
     Pr = (mu0 * cp / kappa0).decompose()
