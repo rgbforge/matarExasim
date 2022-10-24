@@ -45,13 +45,13 @@ def pdeparams(pde, mesh, parameters):
         # mass of neutrals (kg)
         m = (neutrals[i_species, 0][0] * amu)
         # reference density (kg/m^3)
-        rho0 = (neutrals[i_species, -1][0] * m) * (1/u.m**3)
+        rho0 = (neutrals[i_species, -1][0] * m) * (1 / u.m ** 3)
         # kappa exponential using empirical models
         expKappa = neutrals[i_species, 3][0]
         # reference thermal conductivity (J/m*K)
-        kappa0 = (neutrals[i_species, 2][0] * (parameters["temp_lower"].value ** expKappa)) * u.J / (u.m * u.K)
+        kappa0 = (neutrals[i_species, 2][0] * (parameters["temp_lower"].value ** expKappa)) * u.J / (u.m * u.K * u.s)
         # photo absortion cross section (m^2) # todo: verify with jordi.
-        crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m**2
+        crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m ** 2
 
     lambda_d = 0.5 * (euv.values[0, 5:42] + euv.values[1, 5:42]) * 1e-10
     AFAC = euv.values[3, 5:42]
@@ -78,9 +78,7 @@ def pdeparams(pde, mesh, parameters):
     R0 = (radius_in / H0).decompose()
     R1 = (radius_out / H0).decompose()
     # reference dynamic viscosity (kg /m*s)
-    # todo: define the coefficient 1.3e-4.
-    # todo: currently in the wrong units.
-    mu0 = (1.3e-4 * (parameters["temp_lower"] / R) ** parameters["exp_mu"]).decompose()
+    mu0 = (1.3e-4 * (u.kg / (u.K * u.s ** 2)) * (parameters["temp_lower"] / R) ** parameters["exp_mu"]).decompose()
 
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
@@ -100,10 +98,8 @@ def pdeparams(pde, mesh, parameters):
 
     # dimensionless numbers
     # Grasshoff dimensionless number
-    # todo: currently not dimensionless because of mu0
-    Gr = (g * H0 ** 3 / (mu0/rho0) ** 2).decompose()
+    Gr = (g * H0 ** 3 / (mu0 / rho0) ** 2).decompose()
     # Prandtl dimensionless number
-    # todo: currently not dimensionless because of mu0
     Pr = (mu0 * cp / kappa0).decompose()
     # Froude dimensionless number
     Fr = omega * np.sqrt((H0 / g))

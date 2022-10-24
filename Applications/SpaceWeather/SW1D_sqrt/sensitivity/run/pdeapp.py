@@ -45,9 +45,9 @@ parameters = {
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
     "temp_lower": 200 * u.K,  # temperature at the lower bound (kelvin)
     "temp_upper": 1000 * u.K,  # temperature at the upper bound (kelvin)
-    "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
-    "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
-    "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
+    "EUV_input_file_directory": "../inputs/euv.csv",  # EUV input file location
+    "orbits_input_file_directory": "../inputs/orbits.csv",  # orbits input file location
+    "neutrals_input_file_directory": "../inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
     "reference_temp_lower": 1,  # reference value for temperature at the lower boundary
     "exp_mu": 0.5,  # exponential of reference mu
