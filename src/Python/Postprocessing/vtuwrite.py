@@ -111,7 +111,7 @@ def vtuwrite(filename, cgnodes, cgelcon, cgcells, celltype, scalars, vectors, fi
     bsize = zeros(1).astype(int64);
 
     ###########################################################################
-    #                   2 - WRITE UNSTRUCTURED DATA                           #
+    #                   2 - WRITE UNSTRUCTURED data                           #
     #        (Vectors and Scalars datasets all projected on CG mesh           #
     ###########################################################################
     # This part writes the dataset attributes for the mesh nodes or elements.

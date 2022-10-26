@@ -2,12 +2,17 @@
 Latest update: Oct 13th, 2022. [OI]
 """
 # import external modules
-import os, sympy
+import os
+import sympy
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.constants import R_earth
 import astropy.units as u
 from pdeparams import pdeparams
+import time
+
+# start timer
+start_time = time.time()
 
 # Add Exasim package to python search path
 cdir = os.getcwd()
@@ -31,7 +36,7 @@ pde['mpiprocs'] = 1  # number of MPI processors
 # specify model input parameters for summer solstice.
 parameters = {
     "planet": "Earth",  # Planet
-    "species": "O",  # Set species (or "air" for mixture) # todo: (oxygen?)
+    "species": "O",  # Set species to "oxygen" (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
@@ -55,6 +60,7 @@ parameters = {
     "ref_mu_scale": 1,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
+    "F10.7_uncertainty": 0,  # add the reference value of the F10.7
     "p_order": 2,  # order of polynomial in solver
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
@@ -68,7 +74,7 @@ parameters = {
     "mat_vec_tol": 1e-7,  # todo: define
     "rb_dim": 8,  # todo: define
     "resolution": 16,  # set mesh resolution
-    "boundary_epsilon": 1e-3  # boundary epsilon for mesh
+    "boundary_epsilon": 1e-3 # boundary epsilon for mesh
 }
 
 # run executable file to compute solution and store it in dataout folder
@@ -86,11 +92,15 @@ Gencode.gencode(pde)
 # compile source codes to build an executable file and store it in app folder
 compilerstr = Gencode.compilecode(pde)
 
-# todo: what is 1 here?
+# run source code and save solution in dataout folder.
 runstr = Gencode.runcode(pde, 1)
 
+# save time it took to run in sec.
+np.savetxt("time.txt", np.array([time.time() - start_time]))
+
 # get solution from output files in dataout folder
-sol = Postprocessing.fetchsolution(pde, master, dmd, "dataout")
+sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
+
 
 # generate mesh nodes
 dgnodes = Preprocessing.createdgnodes(mesh["p"],

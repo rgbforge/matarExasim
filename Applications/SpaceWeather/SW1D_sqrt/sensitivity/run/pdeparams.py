@@ -121,34 +121,33 @@ def pdeparams(pde, mesh, parameters):
     pde['visdt'] = pde['dt'][0]  # visualization timestep size
     pde['saveSolFreq'] = freq_time_steps  # solution is saved every 100 time steps
     # steps at which solution are collected
-    pde['soltime'] = np.arange(freq_time_steps, pde['dt'].shape[0], freq_time_steps)
+    pde['soltime'] = np.arange(freq_time_steps.value, pde['dt'].shape[0], freq_time_steps)
     pde['timestepOffset'] = parameters["t_restart"].value  # restart parameter
 
     # store physical parameters
-    pde['physicsparam'] = np.array(
-        [parameters["gamma"],  # 0
-         Gr.value,  # 1
-         Pr.value,  # 2
-         Fr.value,  # 3
-         Keuv.value,  # 4
-         M.value,  # 5
-         rho0.value,  # 6
-         parameters["reference_temp_lower"],  # 7
-         (parameters["temp_upper"] / parameters["temp_lower"]).value,  # 8
-         R0.value,  # 9
-         R1.value,  # 10
-         H0.value,  # 11
-         parameters["euv_efficiency"],  # 12
-         parameters["coord"],  # 13
-         parameters["longitude"].value,  # 14
-         parameters["latitude"].value,  # 15
-         declination_sun,  # 16
-         parameters["tau_a"],  # 17
-         t0.value  # 18
-         ])
+    pde['physicsparam'] = np.array([parameters["gamma"],  # 0
+                                    Gr.value,  # 1
+                                    Pr.value,  # 2
+                                    Fr.value,  # 3
+                                    Keuv.value,  # 4
+                                    M.value,  # 5
+                                    rho0.value,  # 6
+                                    parameters["reference_temp_lower"],  # 7
+                                    (parameters["temp_upper"] / parameters["temp_lower"]).value,  # 8
+                                    R0.value,  # 9
+                                    R1.value,  # 10
+                                    H0.value,  # 11
+                                    parameters["euv_efficiency"],  # 12
+                                    parameters["coord"],  # 13
+                                    parameters["longitude"].value,  # 14
+                                    parameters["latitude"].value,  # 15
+                                    declination_sun,  # 16
+                                    parameters["tau_a"],  # 17
+                                    t0.value  # 18
+                                    ])
 
     # store external parameters
-    pde['externalparam'] = np.hstack([lambda_EUV.value, crossSections[0, :], AFAC, F74113])
+    pde['externalparam'] = np.hstack([lambda_EUV.value, crossSections[0, :], AFAC, F74113.value])
 
     # set solver parameters
     pde['extStab'] = parameters["ext_stab"]
