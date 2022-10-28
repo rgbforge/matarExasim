@@ -79,7 +79,7 @@ def source(u, q, w, v, x, t, mu, eta):
     s = array([r_1 * dvxdx - c0 * vx / x1,
                sr * ar + 0.5 * (dvxdx - c0 * vx / x1) * srvx - 0.5 * p * drdx + 0.5 * trr * drdx + 0.5 * trd,
                sr * q_EUV + (3 / 2 - gam) * srT * dvxdx + c0 * (1 / 2 - gam) * srT * vx / x1 + fc * dTdx * (
-                           c0 / x1 + 0.5 * drdx) + SigmadV])
+                       c0 / x1 + 0.5 * drdx) + SigmadV])
 
     return s
 
@@ -315,7 +315,7 @@ def EUVsource1D(u, x, t, mu, eta):
     latitude = mu[15] * pi / 180
     declinationSun = mu[16] * pi / 180
 
-    ## computation of angles
+    # computation of angles
     # define local time
     long_offset = omega * t - pi / 2
     localTime = longitude + long_offset
@@ -323,10 +323,8 @@ def EUVsource1D(u, x, t, mu, eta):
 
     absSinChi = sqrt(1 - cosChi ** 2)
 
-    # Computation F10.7 (let's assume it constant at first, the variation is at another scale)
-    F10p7 = 100
-    F10p7_81 = 100
-    F10p7_mean = 0.5 * (F10p7 + F10p7_81)
+    # computation F10.7 (let's assume it constant at first, the variation is at another scale)
+    F10p7_mean = 0.5 * (mu[19] + mu[20])
 
     rtilde = u[0]
     rho = exp(rtilde)

@@ -7,6 +7,7 @@ from math import ceil
 from Applications.SpaceWeather.SW1D_sqrt.python.mesh1D_adapted import mesh1D_adapted
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
 import astropy.units as u
+import spaceweather as sw
 
 
 def pdeparams(pde, mesh, parameters):
@@ -27,7 +28,11 @@ def pdeparams(pde, mesh, parameters):
     period_day = (float(orbits.values[orbits.values[:, 0] == parameters["planet"], 13]) * u.h).to(u.s)
     radius_in = R_earth + parameters["altitude_lower"]
     radius_out = R_earth + parameters["altitude_upper"]
-    declination_sun = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
+    declination_sun0 = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
+    # add the declaration of the sub
+    declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
+        2 * np.pi * (parameters["day_of_year"] + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (
+                    parameters["day_of_year"] - 3) / 365.24))
 
     # set species information
     species_euv = euv.values[4:, 1]
@@ -96,6 +101,12 @@ def pdeparams(pde, mesh, parameters):
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
 
+
+    # read in F10.7 data
+    data = sw.sw_daily()
+    F10p7 = data.f107_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))
+    F10p7_81 = data.f107_81lst_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))
+
     # dimensionless numbers
     # Grasshoff dimensionless number
     Gr = (g * H0 ** 3 / (mu0 / rho0) ** 2).decompose()
@@ -143,7 +154,9 @@ def pdeparams(pde, mesh, parameters):
                                     parameters["latitude"].value,  # 15
                                     declination_sun,  # 16
                                     parameters["tau_a"],  # 17
-                                    t0.value  # 18
+                                    t0.value,  # 18
+                                    F10p7.value + parameters["F10p7_uncertainty"].value,  # 19
+                                    F10p7_81.value + parameters["F10p7-81_uncertainty"].value  # 20
                                     ])
 
     # store external parameters
