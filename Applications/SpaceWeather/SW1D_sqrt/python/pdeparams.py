@@ -1,5 +1,5 @@
-"""Module to define the model input parameters driven by solar conditions.
-Latest update: Oct 13th, 2022. [OI]
+""" Module to define the model input parameters driven by solar conditions.
+Latest update: Oct 28th, 2022. [OI]
 """
 import numpy as np
 from pandas import read_csv
@@ -7,6 +7,7 @@ from math import ceil
 from Applications.SpaceWeather.SW1D_sqrt.python.mesh1D_adapted import mesh1D_adapted
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
 import astropy.units as u
+import spaceweather as sw
 
 
 def pdeparams(pde, mesh, parameters):
@@ -27,13 +28,12 @@ def pdeparams(pde, mesh, parameters):
     period_day = (float(orbits.values[orbits.values[:, 0] == parameters["planet"], 13]) * u.h).to(u.s)
     radius_in = R_earth + parameters["altitude_lower"]
     radius_out = R_earth + parameters["altitude_upper"]
-    # todo: declinationSun = asin(-sin(declinationSun0)*cos(2*pi*(Ndays+9)/365.24 + pi*0.0167*2*pi*(Ndays-3)/365.24));
     declination_sun0 = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
-    # add the declanation of the sub
-    declination_sun = np.asin(-np.sin(declination_sun0) * np.cos(2 * np.pi * (parameters["day_of_year"] + 9)
-                                                                 / 365.24 + np.pi *
-                                                                 0.0167 * 2 * np.pi * (parameters["day_of_year"]
-                                                                                       - 3) / 365.24))
+    # add the declaration of the sub
+    declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
+        2 * np.pi * (parameters["day_of_year"] + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (
+                    parameters["day_of_year"] - 3) / 365.24))
+
     # set species information
     species_euv = euv.values[4:, 1]
     i_species = np.where(neutrals.values[:, 0] == parameters["species"])[0]
@@ -54,7 +54,7 @@ def pdeparams(pde, mesh, parameters):
         # kappa exponential using empirical models
         expKappa = neutrals[i_species, 3][0]
         # reference thermal conductivity (J/m*K)
-        kappa0 = (neutrals[i_species, 2][0] * (parameters["temp_lower"].value ** expKappa)) * u.J / (u.m * u.K)
+        kappa0 = (neutrals[i_species, 2][0] * (parameters["temp_lower"].value ** expKappa)) * u.J / (u.m * u.K * u.s)
         # photo absortion cross section (m^2) # todo: verify with jordi.
         crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m ** 2
 
@@ -83,9 +83,7 @@ def pdeparams(pde, mesh, parameters):
     R0 = (radius_in / H0).decompose()
     R1 = (radius_out / H0).decompose()
     # reference dynamic viscosity (kg /m*s)
-    # todo: define the coefficient 1.3e-4.
-    # todo: currently in the wrong units.
-    mu0 = (1.3e-4 * (parameters["temp_lower"] / R) ** parameters["exp_mu"]).decompose()
+    mu0 = (1.3e-4 * (u.kg / (u.K * u.s ** 2)) * (parameters["temp_lower"] / R) ** parameters["exp_mu"]).decompose()
 
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
@@ -103,12 +101,16 @@ def pdeparams(pde, mesh, parameters):
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
 
+
+    # read in F10.7 data
+    data = sw.sw_daily()
+    F10p7 = data.f107_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))
+    F10p7_81 = data.f107_81lst_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))
+
     # dimensionless numbers
     # Grasshoff dimensionless number
-    # todo: currently not dimensionless because of mu0
     Gr = (g * H0 ** 3 / (mu0 / rho0) ** 2).decompose()
     # Prandtl dimensionless number
-    # todo: currently not dimensionless because of mu0
     Pr = (mu0 * cp / kappa0).decompose()
     # Froude dimensionless number
     Fr = omega * np.sqrt((H0 / g))
@@ -130,31 +132,32 @@ def pdeparams(pde, mesh, parameters):
     pde['visdt'] = pde['dt'][0]  # visualization timestep size
     pde['saveSolFreq'] = freq_time_steps  # solution is saved every 100 time steps
     # steps at which solution are collected
-    pde['soltime'] = np.arange(freq_time_steps, pde['dt'].shape[0], freq_time_steps)
+    pde['soltime'] = np.arange(freq_time_steps.value, pde['dt'].shape[0], freq_time_steps)
     pde['timestepOffset'] = parameters["t_restart"].value  # restart parameter
 
     # store physical parameters
-    pde['physicsparam'] = np.array(
-        [parameters["gamma"],  # 0
-         Gr.value,  # 1
-         Pr.value,  # 2
-         Fr.value,  # 3
-         Keuv.value,  # 4
-         M.value,  # 5
-         rho0.value,  # 6
-         parameters["reference_temp_lower"],  # 7
-         (parameters["temp_upper"] / parameters["temp_lower"]).value,  # 8
-         R0.value,  # 9
-         R1.value,  # 10
-         H0.value,  # 11
-         parameters["euv_efficiency"],  # 12
-         parameters["coord"],  # 13
-         parameters["longitude"].value,  # 14
-         parameters["latitude"].value,  # 15
-         declination_sun,  # 16
-         parameters["tau_a"],  # 17
-         t0.value  # 18
-         ])
+    pde['physicsparam'] = np.array([parameters["gamma"],  # 0
+                                    Gr.value,  # 1
+                                    Pr.value,  # 2
+                                    Fr.value,  # 3
+                                    Keuv.value,  # 4
+                                    M.value,  # 5
+                                    rho0.value,  # 6
+                                    parameters["reference_temp_lower"],  # 7
+                                    (parameters["temp_upper"] / parameters["temp_lower"]).value,  # 8
+                                    R0.value,  # 9
+                                    R1.value,  # 10
+                                    H0.value,  # 11
+                                    parameters["euv_efficiency"],  # 12
+                                    parameters["coord"],  # 13
+                                    parameters["longitude"].value,  # 14
+                                    parameters["latitude"].value,  # 15
+                                    declination_sun,  # 16
+                                    parameters["tau_a"],  # 17
+                                    t0.value,  # 18
+                                    F10p7.value + parameters["F10p7_uncertainty"].value,  # 19
+                                    F10p7_81.value + parameters["F10p7-81_uncertainty"].value  # 20
+                                    ])
 
     # store external parameters
     pde['externalparam'] = np.hstack([lambda_EUV.value, crossSections[0, :], AFAC, F74113.value])

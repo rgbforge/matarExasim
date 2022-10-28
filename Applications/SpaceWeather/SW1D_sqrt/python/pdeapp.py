@@ -1,5 +1,5 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Oct 24th, 2022. [OI]
+Latest update: Oct 13th, 2022. [OI]
 """
 # import external modules
 import os
@@ -9,6 +9,10 @@ import matplotlib.pyplot as plt
 from astropy.constants import R_earth
 import astropy.units as u
 from pdeparams import pdeparams
+import time
+
+# start timer
+start_time = time.time()
 
 # Add Exasim package to python search path
 cdir = os.getcwd()
@@ -32,8 +36,10 @@ pde['mpiprocs'] = 1  # number of MPI processors
 # specify model input parameters for summer solstice.
 parameters = {
     "planet": "Earth",  # Planet
-    "species": "O",  # Set species to oxygen, i.e. single species (or "air" for mixture)
+    "species": "O",  # Set species to "oxygen" (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
+    "day_of_year": 1,  # Janurary 1st
+    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
@@ -46,9 +52,9 @@ parameters = {
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
     "temp_lower": 200 * u.K,  # temperature at the lower bound (kelvin)
     "temp_upper": 1000 * u.K,  # temperature at the upper bound (kelvin)
-    "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
-    "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
-    "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
+    "EUV_input_file_directory": "../inputs/euv.csv",  # EUV input file location
+    "orbits_input_file_directory": "../inputs/orbits.csv",  # orbits input file location
+    "neutrals_input_file_directory": "../inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
     "reference_temp_lower": 1,  # reference value for temperature at the lower boundary
     "exp_mu": 0.5,  # exponential of reference mu
@@ -56,6 +62,7 @@ parameters = {
     "ref_mu_scale": 1,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
+    "F10.7_uncertainty": 0,  # add the reference value of the F10.7
     "p_order": 2,  # order of polynomial in solver
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
@@ -68,8 +75,12 @@ parameters = {
     "newton_tol": 1e-10,  # newton iterations
     "mat_vec_tol": 1e-7,  # todo: define
     "rb_dim": 8,  # todo: define
-    "resolution": 16,  # set mesh resolution
-    "boundary_epsilon": 1e-3  # boundary epsilon for mesh
+    "resolution": 16,  # set one-dimensional mesh resolution
+    "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
+    "F10p7_uncertainty": 10 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
+    # measured in solar flux units uncertainty
+    "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2))  # F10.7 of the last
+    # 81-days measured in solar flux units uncertainty
 }
 
 # run executable file to compute solution and store it in dataout folder
@@ -85,13 +96,17 @@ pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 Gencode.gencode(pde)
 
 # compile source codes to build an executable file and store it in app folder
-compiler_str = Gencode.compilecode(pde)
+compilerstr = Gencode.compilecode(pde)
 
-# todo: what is 1 here?
-run_str = Gencode.runcode(pde, 1)
+# run source code and save solution in dataout folder.
+runstr = Gencode.runcode(pde, 1)
+
+# save time it took to run in sec.
+np.savetxt("time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
+
 
 # generate mesh nodes
 dgnodes = Preprocessing.createdgnodes(mesh["p"],
