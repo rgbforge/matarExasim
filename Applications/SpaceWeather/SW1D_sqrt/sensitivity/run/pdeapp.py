@@ -5,6 +5,7 @@ Latest update: Oct 13th, 2022. [OI]
 import os
 import sympy
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from astropy.constants import R_earth
 import astropy.units as u
@@ -39,7 +40,7 @@ parameters = {
     "species": "O",  # Set species to "oxygen" (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "day_of_year": 1,  # Janurary 1st
-    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements
+    "date": "2022-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
@@ -77,10 +78,8 @@ parameters = {
     "rb_dim": 8,  # todo: define
     "resolution": 16,  # set one-dimensional mesh resolution
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
-    "F10p7_uncertainty": 10 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
-    # measured in solar flux units uncertainty
-    "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2))  # F10.7 of the last
-    # 81-days measured in solar flux units uncertainty
+    "F10p7_uncertainty": 10,  # added factor F10.7 cm radio emissions measured in solar flux units uncertainty
+    "F10p7-81_uncertainty": 1  # F10.7 of the last 81-days measured in solar flux units uncertainty
 }
 
 # run executable file to compute solution and store it in dataout folder
@@ -102,7 +101,7 @@ compilerstr = Gencode.compilecode(pde)
 runstr = Gencode.runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt("time.txt", np.array([time.time() - start_time]))
+# np.savetxt("time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
@@ -116,27 +115,27 @@ dgnodes = Preprocessing.createdgnodes(mesh["p"],
                                       mesh["curvedboundaryexpr"],
                                       pde["porder"])
 # get parameters
-rho0 = pde["physicsparam"][6]
-H0 = pde["physicsparam"][11]
+rho0 = float(pde["physicsparam"][6])
+H0 = float(pde["physicsparam"][11])
 
-fig, ax = plt.subplots(figsize=(4, 3))
+fig, ax = plt.subplots()
 rho = np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T)
 vr = np.ndarray.flatten(sol[:, 1, :, -1].T) / np.sqrt(rho)
 T = np.ndarray.flatten(sol[:, 2, :, -1].T) / np.sqrt(rho)
 grid = np.ndarray.flatten(dgnodes[:, 0, :].T)
 phys_grid = ((grid * H0 - R_earth.value) * u.m).to(u.km)
 
-ax.plot(phys_grid.T, rho.T, label=r"$\rho$")
-ax.plot(phys_grid.T, vr.T, label=r"$v_{r}$")
+ax.plot(phys_grid.T, rho.T, ls="--", label=r"$\rho$")
+ax.plot(phys_grid.T, vr.T, ls=".-", label=r"$v_{r}$")
 ax.plot(phys_grid.T, T.T, label=r"$T$")
 
-ax.plot(phys_grid.T, np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T), label=r"$u_{1}$")
-ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 1, :, -1].T), label=r"$u_{2}$")
-ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 2, :, -1].T), label=r"$u_{3}$")
+# ax.plot(phys_grid.T, np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T), label=r"$u_{1}$")
+# ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 1, :, -1].T), label=r"$u_{2}$")
+# ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 2, :, -1].T), label=r"$u_{3}$")
 
 ax.set_xlabel("Altitude")
 ax.legend()
 ax.set_xticks([100, 200, 300, 400, 500])
 plt.tight_layout()
-plt.savefig("figs/sol_example.png")
+plt.savefig(cdir[:-4] + "/figs/sol_example.png")
 plt.show()

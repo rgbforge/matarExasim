@@ -104,8 +104,8 @@ def pdeparams(pde, mesh, parameters):
 
     # read in F10.7 data
     data = sw.sw_daily()
-    F10p7 = data.f107_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))
-    F10p7_81 = data.f107_81lst_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))
+    F10p7 = data.f107_adj[parameters["date"]]
+    F10p7_81 = data.f107_81lst_adj[parameters["date"]]
 
     # dimensionless numbers
     # Grasshoff dimensionless number
@@ -155,8 +155,8 @@ def pdeparams(pde, mesh, parameters):
                                     declination_sun,  # 16
                                     parameters["tau_a"],  # 17
                                     t0.value,  # 18
-                                    F10p7.value + parameters["F10p7_uncertainty"].value,  # 19
-                                    F10p7_81.value + parameters["F10p7-81_uncertainty"].value  # 20
+                                    F10p7 + parameters["F10p7_uncertainty"],  # 19
+                                    F10p7_81 + parameters["F10p7-81_uncertainty"]  # 20
                                     ])
 
     # store external parameters

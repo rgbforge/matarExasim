@@ -101,7 +101,6 @@ def pdeparams(pde, mesh, parameters):
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
 
-
     # read in F10.7 data
     data = sw.sw_daily()
     F10p7 = data.f107_adj[parameters["date"]] * (1E-22 * u.W*u.Hz/(u.m**2))

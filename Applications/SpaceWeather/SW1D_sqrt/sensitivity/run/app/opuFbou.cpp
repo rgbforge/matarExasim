@@ -20,6 +20,8 @@ template <typename T> void opuFbou1(T *f, T *xdg, T *udg, T *odg, T *wdg, T *uhg
 		T param17 = param[16];
 		T param18 = param[17];
 		T param19 = param[18];
+		T param20 = param[19];
+		T param21 = param[20];
 		T uinf1 = uinf[0];
 		T uinf2 = uinf[1];
 		T uinf3 = uinf[2];
@@ -210,6 +212,8 @@ template <typename T> void opuFbou2(T *f, T *xdg, T *udg, T *odg, T *wdg, T *uhg
 		T param17 = param[16];
 		T param18 = param[17];
 		T param19 = param[18];
+		T param20 = param[19];
+		T param21 = param[20];
 		T uinf1 = uinf[0];
 		T uinf2 = uinf[1];
 		T uinf3 = uinf[2];
