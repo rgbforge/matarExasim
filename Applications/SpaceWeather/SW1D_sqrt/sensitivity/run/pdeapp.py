@@ -94,16 +94,16 @@ pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 # generate source codes and store them in app folder
 Gencode.gencode(pde)
 
-# compile source codes to build an executable file and store it in app folder
-compilerstr = Gencode.compilecode(pde)
-
-# run source code and save solution in dataout folder.
-runstr = Gencode.runcode(pde, 1)
-
-# save time it took to run in sec.
-# np.savetxt("time.txt", np.array([time.time() - start_time]))
-
-# get solution from output files in dataout folder
+# # compile source codes to build an executable file and store it in app folder
+# compilerstr = Gencode.compilecode(pde)
+#
+# # run source code and save solution in dataout folder.
+# runstr = Gencode.runcode(pde, 1)
+#
+# # save time it took to run in sec.
+# # np.savetxt("time.txt", np.array([time.time() - start_time]))
+#
+# # get solution from output files in dataout folder
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
 
 
@@ -126,8 +126,8 @@ grid = np.ndarray.flatten(dgnodes[:, 0, :].T)
 phys_grid = ((grid * H0 - R_earth.value) * u.m).to(u.km)
 
 ax.plot(phys_grid.T, rho.T, ls="--", label=r"$\rho$")
-ax.plot(phys_grid.T, vr.T, ls=".-", label=r"$v_{r}$")
-ax.plot(phys_grid.T, T.T, label=r"$T$")
+ax.plot(phys_grid.T, vr.T, ls="-.", label=r"$v_{r}$")
+ax.plot(phys_grid.T, T.T, ls="-", label=r"$T$")
 
 # ax.plot(phys_grid.T, np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T), label=r"$u_{1}$")
 # ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 1, :, -1].T), label=r"$u_{2}$")
@@ -135,7 +135,7 @@ ax.plot(phys_grid.T, T.T, label=r"$T$")
 
 ax.set_xlabel("Altitude")
 ax.legend()
-ax.set_xticks([100, 200, 300, 400, 500])
+ax.set_xticks([100, 200, 300, 400, 500, 600, 700, 750])
 plt.tight_layout()
 plt.savefig(cdir[:-4] + "/figs/sol_example.png")
 plt.show()

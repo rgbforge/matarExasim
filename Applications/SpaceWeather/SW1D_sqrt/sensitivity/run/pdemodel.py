@@ -300,84 +300,88 @@ def gettau(uhat, mu, eta, n):
 
 def EUVsource1D(u, x, t, mu, eta):
     r = x[0]
-
+    # ratio of specific heats approx 5/3
     gam = mu[0]
+    # ratio of specific heats - 1 approx 2/3
     gam1 = gam - 1.0
-
+    # Froude number (non-dimensional)
     Fr = mu[3]
+    # omega?
     omega = Fr / sqrt(gam)
+    # ratio of kinetic to photoionization energy (non-dimensional)
     K0 = mu[4]
+    #  the amount of particles in a given volume (non-dimensional)
     M0 = mu[5]
-
+    # reference length scale ratio (non-dimensional)
     R0 = mu[9]
-
+    # longitude location in (radians)
     longitude = mu[14] * pi / 180
+    # latitude location in (radians)
     latitude = mu[15] * pi / 180
+    # add the declaration of the sun in (radians)
     declinationSun = mu[16] * pi / 180
-
     # computation of angles
     # define local time
     long_offset = omega * t - pi / 2
     localTime = longitude + long_offset
     cosChi = sin(declinationSun) * sin(latitude) + cos(declinationSun) * cos(latitude) * cos(localTime)
-
     absSinChi = sqrt(1 - cosChi ** 2)
-
-    # computation F10.7 (let's assume it constant at first, the variation is at another scale)
+    # computation mean F10.7 (let's assume it constant at first, the variation is at another scale)
     F10p7_mean = 0.5 * (mu[19] + mu[20])
-
     rtilde = u[0]
     rho = exp(rtilde)
     T = u[2] / sqrt(rho)
-
-    # Quantities
+    # gravitational constant at the lower boundary
     gravity = (R0 ** 2 / (r ** 2)) / gam
+    # local scale height (non-dimensional)
     H = T / (gam * gravity)
-
     # Chapman integral
     Rp = rho * H
+    # zenith angle
     Xp = r / H
     y = sqrt(Xp / 2) * abs(cosChi)
-
     Ierf = 0.5 * (1 + tanh(1000 * (8 - y)))
-    # todo: should these values be specified in pdeparams?
+    # approximation of error function (cheaper to program)
+    # error function + epsilon avoid zero? avoid steep changes.
     a_erf = 1.06069630
     b_erf = 0.55643831
     c_erf = 1.06198960
     d_erf = 1.72456090
     f_erf = 0.56498823
     g_erf = 0.06651874
-
     erfcy = Ierf * (a_erf + b_erf * y) / (c_erf + d_erf * y + y * y) + (1 - Ierf) * f_erf / (g_erf + y)
-
     IcosChi = 0.5 * (1 + tanh(100 * cosChi))
     IsinChi = 0.5 * (1 + tanh(100 * (r * absSinChi - R0)))
-
     alpha1 = Rp * erfcy * sqrt(0.5 * pi * Xp)
     auxXp = (1 - IcosChi) * IsinChi * Xp * (1 - absSinChi)
     Rg = rho * H * exp(auxXp)
     alpha2 = (2 * Rg - Rp * erfcy) * sqrt(0.5 * pi * Xp)
-
     alpha = IcosChi * alpha1 + (1 - IcosChi) * (IsinChi * alpha2 + (1 - IsinChi) * 1e2)
 
     Q = 0
     for iWave in range(0, 37):
+        # the corresponding wavelength
         lambdaw = eta[iWave]
+        # the photo absorption cross section
         crossSection = eta[37 + iWave]
+        # A_{j} scaling factor
         AFAC = eta[2 * 37 + iWave]
+        # F_{74113} is the normalized EUV flux spectrum
         F74113 = eta[3 * 37 + iWave]
-
         tau = M0 * crossSection * alpha
-
+        # smooth surrogate
         slope0 = 1 + AFAC * (F10p7_mean - 80)
         Islope = 0.5 * (1 + tanh(1000 * (slope0 - 0.8)))
         slopeIntensity = slope0 * Islope + 0.8 * (1 - Islope)
+        # the normalized EUV flux intensity computing using EUVAC model.
         Intensity0 = F74113 * slopeIntensity
+        # the intensity
         Intensity = Intensity0 * exp(-tau)
+        # update the heating source term
+        Q += crossSection * Intensity / lambdaw
 
-        Q = Q + crossSection * Intensity / lambdaw
-
+    # heating efficiency
     eff = mu[12]
+    # EUV source term
     s_EUV = gam * gam1 * eff * Q / K0
-
     return s_EUV

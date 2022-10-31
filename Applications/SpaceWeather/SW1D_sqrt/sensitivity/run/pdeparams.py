@@ -29,7 +29,7 @@ def pdeparams(pde, mesh, parameters):
     radius_in = R_earth + parameters["altitude_lower"]
     radius_out = R_earth + parameters["altitude_upper"]
     declination_sun0 = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
-    # add the declaration of the sub
+    # add the declaration of the sun
     declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
         2 * np.pi * (parameters["day_of_year"] + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (
                     parameters["day_of_year"] - 3) / 365.24))
