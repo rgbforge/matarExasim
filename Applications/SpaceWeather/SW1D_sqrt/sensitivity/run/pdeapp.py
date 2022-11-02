@@ -1,5 +1,5 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Oct 13th, 2022. [OI]
+Latest update: Nov 1st, 2022. [OI]
 """
 # import external modules
 import os
@@ -39,7 +39,7 @@ parameters = {
     "planet": "Earth",  # Planet
     "species": "O",  # Set species to "oxygen" (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
-    "day_of_year": 1,  # Janurary 1st
+    "day_of_year": 1,  # January 1st, 2022
     "date": "2022-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
@@ -63,7 +63,6 @@ parameters = {
     "ref_mu_scale": 1,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
-    "F10.7_uncertainty": 0,  # add the reference value of the F10.7
     "p_order": 2,  # order of polynomial in solver
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
@@ -76,7 +75,7 @@ parameters = {
     "newton_tol": 1e-10,  # newton iterations
     "mat_vec_tol": 1e-7,  # todo: define
     "rb_dim": 8,  # todo: define
-    "resolution": 16,  # set one-dimensional mesh resolution
+    "resolution": 30,  # set one-dimensional mesh resolution
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
     "F10p7_uncertainty": 10,  # added factor F10.7 cm radio emissions measured in solar flux units uncertainty
     "F10p7-81_uncertainty": 1  # F10.7 of the last 81-days measured in solar flux units uncertainty
@@ -92,17 +91,18 @@ pde = Gencode.setcompilers(pde)
 pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 
 # generate source codes and store them in app folder
+# once the model has ran for a certain resolution you do not need to run this line again.
 Gencode.gencode(pde)
 
 # # compile source codes to build an executable file and store it in app folder
-# compilerstr = Gencode.compilecode(pde)
-#
-# # run source code and save solution in dataout folder.
-# runstr = Gencode.runcode(pde, 1)
-#
-# # save time it took to run in sec.
-# # np.savetxt("time.txt", np.array([time.time() - start_time]))
-#
+compilerstr = Gencode.compilecode(pde)
+
+# run source code and save solution in dataout folder.
+runstr = Gencode.runcode(pde, 1)
+
+# save time it took to run in sec.
+np.savetxt("time.txt", np.array([time.time() - start_time]))
+
 # # get solution from output files in dataout folder
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
 

@@ -32,7 +32,7 @@ def pdeparams(pde, mesh, parameters):
     # add the declaration of the sun
     declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
         2 * np.pi * (parameters["day_of_year"] + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (
-                    parameters["day_of_year"] - 3) / 365.24))
+                parameters["day_of_year"] - 3) / 365.24))
 
     # set species information
     species_euv = euv.values[4:, 1]
@@ -101,11 +101,10 @@ def pdeparams(pde, mesh, parameters):
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
 
-
     # read in F10.7 data
     data = sw.sw_daily()
-    F10p7 = data.f107_adj[parameters["date"]]
-    F10p7_81 = data.f107_81lst_adj[parameters["date"]]
+    F10p7 = data.f107_obs[parameters["date"]]
+    F10p7_81 = data.f107_81lst_obs[parameters["date"]]
 
     # dimensionless numbers
     # Grasshoff dimensionless number
