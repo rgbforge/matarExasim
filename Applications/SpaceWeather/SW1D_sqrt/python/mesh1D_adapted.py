@@ -8,7 +8,7 @@ from scipy.optimize import fsolve
 
 def mesh1D_adapted(r1, r2, nx):
     dlay = 1
-    dwall = 1e-2
+    dwall = 5e-3
 
     # Calculate mesh ratio
     c = 1 - dlay / dwall
