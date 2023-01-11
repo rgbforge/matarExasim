@@ -38,7 +38,7 @@ parameters = {
     "planet": "Earth",  # Planet
     "species": "O",  # Set species to "oxygen" (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
-    "day_of_year": 1,  # Janurary 1st
+    "day_of_year": 1,  # January 1st
     "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
@@ -48,13 +48,13 @@ parameters = {
     "latitude": 0*u.deg,  # latitude coordinates
     "euv_efficiency": 1.2,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
-    "altitude_upper": (750*u.km).to(u.m),  # computational domain altitude upper bound (meters)
+    "altitude_upper": (500*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
     "temp_lower": 200 * u.K,  # temperature at the lower bound (kelvin)
     "temp_upper": 1000 * u.K,  # temperature at the upper bound (kelvin)
-    "EUV_input_file_directory": "../inputs/euv.csv",  # EUV input file location
-    "orbits_input_file_directory": "../inputs/orbits.csv",  # orbits input file location
-    "neutrals_input_file_directory": "../inputs/neutrals.csv",  # neutrals input file location
+    "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
+    "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
+    "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
     "reference_temp_lower": 1,  # reference value for temperature at the lower boundary
     "exp_mu": 0.5,  # exponential of reference mu
@@ -124,7 +124,7 @@ rho = np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T)
 vr = np.ndarray.flatten(sol[:, 1, :, -1].T) / np.sqrt(rho)
 T = np.ndarray.flatten(sol[:, 2, :, -1].T) / np.sqrt(rho)
 grid = np.ndarray.flatten(dgnodes[:, 0, :].T)
-phys_grid = ((grid * H0 - R_earth.value) * u.m).to(u.km)
+phys_grid = ((grid * float(H0) - R_earth.value) * u.m).to(u.km)
 
 ax.plot(phys_grid.T, rho.T, label=r"$\rho$")
 ax.plot(phys_grid.T, vr.T, label=r"$v_{r}$")
@@ -138,5 +138,5 @@ ax.set_xlabel("Altitude")
 ax.legend()
 ax.set_xticks([100, 200, 300, 400, 500])
 plt.tight_layout()
-plt.savefig("figs/sol_example.png")
+#plt.savefig("figs/sol_example.png")
 plt.show()
