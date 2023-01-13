@@ -1,14 +1,13 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Oct 13th, 2022. [OI]
+Latest update: Jan 11th, 2022. [OI]
 """
 # import external modules
 import os
-import sympy
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.constants import R_earth
 import astropy.units as u
-from pdeparams import pdeparams
+from Applications.SpaceWeather.SW1D_sqrt.python.pdeparamsMSIS import pdeparams
 import time
 
 # start timer
@@ -20,7 +19,7 @@ ii = cdir.find("Exasim")
 exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
 
 # import internal modules
-import Preprocessing, Postprocessing, Gencode, Mesh
+import Preprocessing, Postprocessing, Gencode
 
 # Create pde object and mesh object
 pde, mesh = Preprocessing.initializeexasim()
@@ -36,17 +35,15 @@ pde['mpiprocs'] = 1  # number of MPI processors
 # specify model input parameters for summer solstice.
 parameters = {
     "planet": "Earth",  # Planet
-    "species": "O",  # Set species to "oxygen" (or "air" for mixture)
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
-    "day_of_year": 1,  # January 1st
-    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements
+    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hh:mm:ss
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0*u.s,  # restart at given time step (second)
     "longitude": 0*u.deg,  # longitude coordinates #todo: try San Diego coords (long=32.7, lat=360-117.16)
     "latitude": 0*u.deg,  # latitude coordinates
-    "euv_efficiency": 1.2,  # EUV efficiency # todo: what are the units?
+    "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (500*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
@@ -58,7 +55,8 @@ parameters = {
     "gamma": 5/3,  # ratio of specific heats
     "reference_temp_lower": 1,  # reference value for temperature at the lower boundary
     "exp_mu": 0.5,  # exponential of reference mu
-    "tau_a": 10,  # parameter relating to solver. #todo: define this better.
+    "exp_Kappa": 0.75,  # exponential of reference kappa
+    "tau_a": 5,  # parameter relating to solver. #todo: define this better.
     "ref_mu_scale": 1,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
@@ -79,8 +77,11 @@ parameters = {
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
     "F10p7_uncertainty": 10 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty
-    "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2))  # F10.7 of the last
+    "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
+    "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for.
+    "nu_eddy": 100,  # eddy viscosity
+    "alpha_eddy": 35  # eddy conductivity
 }
 
 # run executable file to compute solution and store it in dataout folder

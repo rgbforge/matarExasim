@@ -234,7 +234,7 @@ def fluxViscous(u, q, x, mu, eta):
     dvxdx = sr1 * drvxdx - 0.5 * drdx * vx
     dTdx = sr1 * drTdx - 0.5 * drdx * T
 
-   # Viscosity
+    # Viscosity
     expmu = mu[11]
     expKappa = mu[12]
     nuEddy = mu[13]
@@ -316,7 +316,7 @@ def gettau(uhat, mu, eta, x, n):
     #     tauA = sqrt(vx*vx) + c
     tauA = mu[21]
 
-   # Viscosity
+    # Viscosity
     expmu = mu[11]
     expKappa = mu[12]
     nuEddy = mu[13]
@@ -352,6 +352,7 @@ def EUVsource1D(u, x, t, mu, eta):
     R0 = mu[15]
     H0 = mu[17]
 
+    # TODO:  this is not the order we have in pdeparams -- need to be consistent!!!
     longitude = mu[22] * pi / 180
     latitude = mu[23] * pi / 180
     declinationSun0 = mu[7] * pi / 180
