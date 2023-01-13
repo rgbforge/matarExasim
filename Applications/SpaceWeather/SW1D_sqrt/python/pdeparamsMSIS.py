@@ -42,8 +42,8 @@ def pdeparams(pde, mesh, parameters):
                        int(parameters["date"][8:10])).timetuple().tm_yday
     # add the declaration of the sub # todo: Jordi, why do you not have this line implemented in the MATLAB version?
     # also, why do you repeat the calculation in pdemodelMSIS?
-    declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
-        2 * np.pi * (day_of_year + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (day_of_year - 3) / 365.24))
+    # declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
+    #     2 * np.pi * (day_of_year + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (day_of_year - 3) / 365.24))
 
     # set species information
     i_species = np.zeros(len(parameters["chemical_species"]))
@@ -144,7 +144,7 @@ def pdeparams(pde, mesh, parameters):
                                     Keuv.value,  # 4
                                     M.value,  # 5
                                     parameters["euv_efficiency"],  # 6
-                                    declination_sun,  # 7
+                                    declination_sun0,  # 7
                                     F10p7.value + parameters["F10p7_uncertainty"].value,  # 8
                                     F10p7_81.value + parameters["F10p7-81_uncertainty"].value,  # 9
                                     day_of_year,  # 10

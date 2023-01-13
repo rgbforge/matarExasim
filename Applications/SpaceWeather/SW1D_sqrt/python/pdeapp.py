@@ -65,7 +65,7 @@ parameters = {
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
     "ext_stab": 1,  # solver parameter # todo: understand this better.
-    "tau": 0.0,  # discontinuous galerkin stabilization parameter
+    "tau": 0.0,  # discontinuous galerkin stabilization parameter # TODO: what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
     "linear_solver_tol": 1e-16,  # GMRES (linear solver) solver tolerance
     "linear_solver_iter": 30,  # GMRES (linear solver) solver iterations
