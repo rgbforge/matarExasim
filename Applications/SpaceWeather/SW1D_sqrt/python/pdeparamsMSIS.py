@@ -40,11 +40,10 @@ def pdeparams(pde, mesh, parameters):
     day_of_year = date(int(parameters["date"][:4]),
                        int(parameters["date"][5:7]),
                        int(parameters["date"][8:10])).timetuple().tm_yday
-    # add the declaration of the sub # todo: Jordi, why do you not have this line implemented in the MATLAB version?
+    # add the declaration of the sub, Jordi, why do you not have this line implemented in the MATLAB version?
     # also, why do you repeat the calculation in pdemodelMSIS?
     # declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
     #     2 * np.pi * (day_of_year + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (day_of_year - 3) / 365.24))
-    
     # Answer: the computation is performed in pdemodel because the declination angle changes with time
     # For this reason, the value that we give as parameter is this declination0 (maximum declination, the one at solstice)
     # then the current declination is computed at every time-step. Otherwise, it would be constant.
@@ -54,25 +53,31 @@ def pdeparams(pde, mesh, parameters):
     i_species_euv = np.zeros(len(parameters["chemical_species"]))
     for ii in range(len(parameters["chemical_species"])):
         i_species[ii] = np.where(neutrals.values[:, 0] == parameters["chemical_species"][ii])[0]
-        i_species_euv[ii] = np.where(euv.values[4:, 1] == parameters["chemical_species"][ii])[0]  #  todo: Jordi, can you check this line?
+        #  todo: Jordi, can you check this line? should it be 2 or 4?
+        #  todo: the line in MATLAB:
+        #  todo: iSpeciesEUV(isp) = find(strcmp(table2array(EUV(:, 2)), species(isp)));
+        i_species_euv[ii] = np.where(euv.values[4:, 1] == parameters["chemical_species"][ii])[0]
 
     amu = 1.66e-27 * u.kg  # atomic mass unit
     # mass of neutrals (kg)
     mass = (neutrals[i_species, 1][0] * amu)
     # reference thermal conductivity (J/m*K)
     ckappa0 = neutrals[i_species, 3][0]
-
+    #  todo: in MATLAB version:
+    #  todo: expKappa = table2array(neutrals(iSpecies,5));
+    #  todo: expKappa = 0.75;
+    #  todo: Jordi, what should I use here?
+    # initially in Armstrongs
     lambda_d = 0.5 * (euv.values[0, 5:42] + euv.values[1, 5:42]) * 1e-10
     AFAC = euv.values[3, 5:42]
+    # todo: EUV.values starts at 4 above, should we do the same here?
     F74113_d = euv.values[2, 5:42] * float(euv.values[2, 3]) * 1e4
     # photo absortion cross section (m^2) # todo: verify with jordi.
     crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m ** 2
 
     # MSIS reference values
-    # todo: Jordi, what is chi and cchi?
-
-    #answer: chi are the mass fractions (rho_i/rho) over altitude
-    #answer: cchi are the coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
+    # todo return: chi are the mass fractions (rho_i/rho) over altitude
+    # todo return: cchi are the coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
     # for each of the species except one (atomic O) which is computed as 1-sum{chi}
     rho0, T0, chi, cchi = MSIS_reference_values(parameters=parameters, mass=mass)
 
@@ -97,12 +102,30 @@ def pdeparams(pde, mesh, parameters):
     # reference length scale ratio (dimensionless): mesh lower and upper bounds.
     R0 = (radius_in / H0).decompose()
     R1 = (radius_out / H0).decompose()
+
+
+
     # reference dynamic viscosity (kg /m*s)
+    # todo: matlab code:
+    #  cmu0 = 2 * 1.3e-4;
+    #  expMu = 0.5;
+    #  kappa0 = chi(1,:)*ckappa0 * T0 ^ expKappa;
+    #  % kappa0 = ckappa0(2) * T0 ^ expKappa;
+    #  ckappai = ckappa0 / (chi(1,:) * ckappa0);
+    #  kappa0 = 0.4 * kappa0;
+    #  alpha0 = kappa0 / (rho0 * cp);
+    #  mu0 = cmu0 * (T0 / R) ^ expMu;
+    #  nu0 = mu0 / rho0;
+    # todo: Jordi, should I multiply the line below by 2? do you want me to overwrite this line with the line above?
     mu0 = (1.3e-4 * (u.kg / (u.K * u.s ** 2)) * (parameters["temp_lower"] / R) ** parameters["exp_mu"]).decompose()
+    # todo: Jordi, what is the size of kappa0?
+    kappa0 = chi[0, :] * ckappa0 * (T0 ** parameters["exp_kappa"])
+    # todo: Jordi, when do we need this? is this thermal diffusivity?
+    alpha0 = kappa0 / (rho0 * cp)
 
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
-    kappa0 = parameters["ref_kappa_scale"] * ckappa0
+    kappa0 = parameters["ref_kappa_scale"] * kappa0
     rho0 = parameters["ref_rho_scale"] * rho0
 
     # define euv heating parameters

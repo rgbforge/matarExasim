@@ -6,12 +6,19 @@ import numpy as np
 import astropy.units as u
 
 
-def MSIS_reference_values(parameters, mass):
+def MSIS_reference_values(parameters, mass, n_radial_msis=101):
     """
-
     :param parameters: dictionary defined in pdeapp.py with all the model parameters.
     :param mass: molecular mass of each species (we need it to compute mass density from species number densities)
-    :return:
+    :param n_radial_msis: number of mesh points in the radial direction for MSIS simulation. (default: 101)
+    :return: (1) rho0 : # todo describe size + units
+                        initial density todo: verify with Jordi.
+             (2) T0 : # todo describe size + units
+                        initial temperature todo: verify with Jordi.
+             (3) chi : # todo describe size + units
+                        mass fractions (rho_i/rho) over altitude
+             (4) cchi : # todo describe size + units
+                        coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
     """
     # todo: Jordi, do you know how I can obtain the altitude mesh in "km"??
     # todo: I need to pass it into the msis function below.
@@ -26,19 +33,19 @@ def MSIS_reference_values(parameters, mass):
     # R0: inner radius physicsparam[15] , H0 reference scale height, physicsparam[17], altitude_lower = 100e3
     alt_mesh = np.linspace(parameters["altitude_lower"].to(u.km).value,
                            parameters["altitude_upper"].to(u.km).value,
-                           parameters["resolution"])
+                           n_radial_msis)
 
-    # NEW to do we also "average" in longitude and latitude (we then average to get  a "general" quantity, not an instantaneous picture)
+    # todo: NEW we also "average" in longitude and latitude (we then average to get  a "general" quantity, not an instantaneous picture)
     # need to create a vector of latitudes and longitudes of interest too
 
-    # get data needed to run MSIS.
+    # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
 
     # run MSIS, output is of dimensions: (ndates, nlons, nlats, nalts, 11)
     # 11 stands for each species in the following order:
-    # [Total mass density(kg / m3),  N2  # density (m-3), O2  # density (m-3), O  # density (m-3),
-    #  He  # density (m-3), H  # density (m-3), Ar  # density (m-3), N  # density (m-3),
-    #  Anomalous oxygen  # density (m-3), NO  # density (m-3), Temperature(K)]
+    # [Total mass density (kg / m3),  N2 density (m-3), O2 density (m-3), O density (m-3),
+    #  He density (m-3), H density (m-3), Ar density (m-3), N density (m-3),
+    #  Anomalous oxygen density (m-3), NO density (m-3), Temperature(K)]
     output_msis = msis.run(dates=parameters["date"],  # (list of dates) – Dates and times of interest
                            lons=parameters["longitude"].value,  # (list of floats) – Longitudes of interest
                            lats=parameters["latitude"].value,  # (list of floats) – Latitudes of interest
