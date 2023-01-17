@@ -44,6 +44,10 @@ def pdeparams(pde, mesh, parameters):
     # also, why do you repeat the calculation in pdemodelMSIS?
     # declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
     #     2 * np.pi * (day_of_year + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (day_of_year - 3) / 365.24))
+    
+    # Answer: the computation is performed in pdemodel because the declination angle changes with time
+    # For this reason, the value that we give as parameter is this declination0 (maximum declination, the one at solstice)
+    # then the current declination is computed at every time-step. Otherwise, it would be constant.
 
     # set species information
     i_species = np.zeros(len(parameters["chemical_species"]))
@@ -66,6 +70,10 @@ def pdeparams(pde, mesh, parameters):
 
     # MSIS reference values
     # todo: Jordi, what is chi and cchi?
+
+    #answer: chi are the mass fractions (rho_i/rho) over altitude
+    #answer: cchi are the coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
+    # for each of the species except one (atomic O) which is computed as 1-sum{chi}
     rho0, T0, chi, cchi = MSIS_reference_values(parameters=parameters, mass=mass)
 
     # define physical quantities
@@ -167,7 +175,7 @@ def pdeparams(pde, mesh, parameters):
 
     # store external parameters
     # todo: Jordi, I am not sure how to convert this from your matlab code. ordering is different.
-    pde['externalparam'] = np.hstack([lambda_EUV.value, crossSections[0, :], AFAC, F74113.value])
+    pde['externalparam'] = np.hstack([lambda_EUV.value, AFAC, F74113.value, crossSections[0, :], ])
 
     # set solver parameters
     pde['extStab'] = parameters["ext_stab"]

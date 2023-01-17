@@ -352,9 +352,8 @@ def EUVsource1D(u, x, t, mu, eta):
     R0 = mu[15]
     H0 = mu[17]
 
-    # TODO:  this is not the order we have in pdeparams -- need to be consistent!!!
-    longitude = mu[22] * pi / 180
-    latitude = mu[23] * pi / 180
+    latitude = mu[22] * pi / 180
+    longitude = mu[23] * pi / 180
     declinationSun0 = mu[7] * pi / 180
     doy = mu[10]
     t0 = mu[20]
@@ -391,6 +390,7 @@ def EUVsource1D(u, x, t, mu, eta):
 
     Ierf = 0.5 * (1 + tanh(1000 * (8 - y)))
     # todo: should these values be specified in pdeparams?
+    # No need to, they don't change, this is a numerical approximation to the error function to guarantee positiveness
     a_erf = 1.06069630
     b_erf = 0.55643831
     c_erf = 1.06198960
@@ -420,9 +420,11 @@ def EUVsource1D(u, x, t, mu, eta):
         Chi[0] = Chi[0] - Chi[iSpecies-1]
 
     mass = eta[(3+nspecies)*nWaves+4*(nspecies-1):(3+nspecies)*nWaves+4*(nspecies-1)+nspecies]
+    #Alert: new change for consistency with total mass (not pushed yet in the Matlab version)
     mw = 0.0
     for iSpecies in range(0, nspecies):
-        mw = mw + mass[iSpecies]*Chi[iSpecies]
+        mw = mw + Chi[iSpecies]/mass[iSpecies]
+    mw = 1/mw
 
     # Compute EUV
     s_EUV = 0
@@ -477,9 +479,12 @@ def weightedMass(x, mu, eta):
 
     mw = 0.0
     dmdr = 0.0
+    #Alert: new change for consistency with total mass (not pushed yet in the Matlab version)
     for iSpecies in range(0, nspecies):
-        mw = mw + mass[iSpecies]*Chi[iSpecies]
-        dmdr = dmdr + mass[iSpecies]*dChidr[iSpecies]
+        mw = mw + Chi[iSpecies]/mass[iSpecies]
+        dmdr = dmdr + dChidr[iSpecies]/mass[iSpecies]
+    mw = 1/mw
+    dmdr = -mw*mw*dmdr
 
     return mw, dmdr
 

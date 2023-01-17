@@ -10,15 +10,26 @@ def MSIS_reference_values(parameters, mass):
     """
 
     :param parameters: dictionary defined in pdeapp.py with all the model parameters.
-    :param mass: mass of each species? not sure... Jordi? Why do we need this?
+    :param mass: molecular mass of each species (we need it to compute mass density from species number densities)
     :return:
     """
     # todo: Jordi, do you know how I can obtain the altitude mesh in "km"??
     # todo: I need to pass it into the msis function below.
     # todo: I think we need to get mesh.dgnodes but that means we should compute the mesh before calling this function.
+
+    # we do not need the mesh here, we only need the position of the lower and upper boundary 
+    # we want to obtain certain quantities at the lower boundary + a distribution in space of the partial densities
+    # to do that we can use any radial distribution of points we want, not necessarily linked to the mesh
+    # Actually we want more points, so don't use resolution, but another parameter. I set it to have 101 points.
+
+    # to get the altitude (mesh) in km: ((dgnodes-R0)*H0 + altitude_lower)/1000
+    # R0: inner radius physicsparam[15] , H0 reference scale height, physicsparam[17], altitude_lower = 100e3
     alt_mesh = np.linspace(parameters["altitude_lower"].to(u.km).value,
                            parameters["altitude_upper"].to(u.km).value,
                            parameters["resolution"])
+
+    # NEW to do we also "average" in longitude and latitude (we then average to get  a "general" quantity, not an instantaneous picture)
+    # need to create a vector of latitudes and longitudes of interest too
 
     # get data needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
