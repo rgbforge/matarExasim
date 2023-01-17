@@ -13,7 +13,7 @@ from datetime import date
 
 
 def pdeparams(pde, mesh, parameters):
-    """ Set the model input parameters.
+    """ A funcyion to set the model input parameters, mesh, and initial conditions.
 
     :param pde: contains pde parameters (dict).
     :param mesh: contains mesh grid parameters (dict).
@@ -35,25 +35,19 @@ def pdeparams(pde, mesh, parameters):
     period_day = (float(orbits.values[orbits.values[:, 0] == parameters["planet"], 13]) * u.h).to(u.s)
     radius_in = R_earth + parameters["altitude_lower"]
     radius_out = R_earth + parameters["altitude_upper"]
+    # maximum declination at summer/winter solstice.
     declination_sun0 = float(orbits.values[orbits.values[:, 0] == parameters["planet"], 19])
     # get the day of the year
     day_of_year = date(int(parameters["date"][:4]),
                        int(parameters["date"][5:7]),
                        int(parameters["date"][8:10])).timetuple().tm_yday
-    # add the declaration of the sub, Jordi, why do you not have this line implemented in the MATLAB version?
-    # also, why do you repeat the calculation in pdemodelMSIS?
-    # declination_sun = np.arcsin(-np.sin(declination_sun0) * np.cos(
-    #     2 * np.pi * (day_of_year + 9) / 365.24 + np.pi * 0.0167 * 2 * np.pi * (day_of_year - 3) / 365.24))
-    # Answer: the computation is performed in pdemodel because the declination angle changes with time
-    # For this reason, the value that we give as parameter is this declination0 (maximum declination, the one at solstice)
-    # then the current declination is computed at every time-step. Otherwise, it would be constant.
 
     # set species information
     i_species = np.zeros(len(parameters["chemical_species"]))
     i_species_euv = np.zeros(len(parameters["chemical_species"]))
     for ii in range(len(parameters["chemical_species"])):
         i_species[ii] = np.where(neutrals.values[:, 0] == parameters["chemical_species"][ii])[0]
-        #  todo: Jordi, can you check this line? should it be 2 or 4?
+        #  todo: Jordi, can you check this line? should it be beyond row index 4?
         #  todo: the line in MATLAB:
         #  todo: iSpeciesEUV(isp) = find(strcmp(table2array(EUV(:, 2)), species(isp)));
         i_species_euv[ii] = np.where(euv.values[4:, 1] == parameters["chemical_species"][ii])[0]
@@ -196,10 +190,20 @@ def pdeparams(pde, mesh, parameters):
                                     ])
 
     # store external parameters
-    # todo: Jordi, I am not sure how to convert this from your matlab code. ordering is different.
-    # todo MATLAB: pde.externalparam = [lambda,AFAC,F74113,reshape(crossSections',[37*nspecies,1])',
-    #  reshape(cchi',[4*(nspecies-1),1])',mass',ckappai'];
-    pde['externalparam'] = np.hstack([lambda_EUV.value, AFAC, F74113.value, crossSections[0, :], ])
+    # todo: Jordi, I am not sure how to convert this from your matlab code. how does reshape translate? might be best
+    #  if you translate this line.
+    # todo MATLAB: pde.externalparam = [lambda,
+    #                                   AFAC,
+    #                                   F74113,
+    #                                   reshape(crossSections',[37*nspecies,1])',
+    #                                   reshape(cchi',[4*(nspecies-1),1])',
+    #                                   mass',
+    #                                   ckappai'];
+    pde['externalparam'] = np.hstack([lambda_EUV.value,  # 0
+                                      AFAC,  # 1
+                                      F74113.value,  # 2
+                                      crossSections[0, :],  # 3
+                                      ])
 
     # set solver parameters
     pde['extStab'] = parameters["ext_stab"]
