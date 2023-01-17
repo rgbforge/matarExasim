@@ -4,6 +4,7 @@ Latest update: Jan 11, 2023 [OI]
 import numpy as np
 from pandas import read_csv
 from math import ceil
+import matplotlib.pyplot as plt
 from Applications.SpaceWeather.SW1D_sqrt.python.mesh1D_adapted import mesh1D_adapted
 from Applications.SpaceWeather.SW1D_sqrt.python.MSIS_reference_values import MSIS_reference_values
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
@@ -54,7 +55,7 @@ def pdeparams(pde, mesh, parameters):
 
     amu = 1.66e-27 * u.kg  # atomic mass unit
     # mass of neutrals (kg)
-    mass = neutrals.values[i_species, 1] * amu
+    mass = np.array(neutrals.values[i_species, 1], dtype=float) * amu
     # reference thermal conductivity (J/m*K)
     ckappa0 = neutrals.values[i_species, 3]
     # initially in Armstrongs
