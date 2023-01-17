@@ -81,8 +81,8 @@ parameters = {
     "nu_eddy": 100,  # eddy viscosity
     "alpha_eddy": 35,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation.
-    "n_longitude_MSIS": 101,  # number of mesh points in the longitude direction for MSIS simulation.
-    "n_latitude_MSIS": 101  # number of mesh points in the longitude direction for MSIS simulation.
+    "n_longitude_MSIS": 73,  # number of mesh points in the longitude direction for MSIS simulation.
+    "n_latitude_MSIS": 73  # number of mesh points in the longitude direction for MSIS simulation.
 }
 
 # run executable file to compute solution and store it in dataout folder

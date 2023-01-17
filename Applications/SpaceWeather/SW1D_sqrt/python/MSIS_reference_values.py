@@ -73,8 +73,8 @@ def MSIS_reference_values(parameters, mass):
     #   lat = -90 + angleres:angleres: 90 - angleres;
     #   long = -180:angleres: 180 - angleres;
     #   https://swxtrec.github.io/pymsis/examples/plot_surface_animation.html#sphx-glr-examples-plot-surface-animation-py
-    latitude_mesh = range(-180, 185, 5)
-    longitude_mesh = range(-90, 95, 5)
+    longitude_mesh = np.linspace(-180, 180, parameters["n_longitude_MSIS"])
+    latitude_mesh = np.linspace(-90, 90, parameters["n_latitude_MSIS"])
 
     # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
