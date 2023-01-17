@@ -43,8 +43,8 @@ def pdeparams(pde, mesh, parameters):
                        int(parameters["date"][8:10])).timetuple().tm_yday
 
     # set species information
-    i_species = np.zeros(len(parameters["chemical_species"]))
-    i_species_euv = np.zeros(len(parameters["chemical_species"]))
+    i_species = np.zeros(len(parameters["chemical_species"]), dtype=int)
+    i_species_euv = np.zeros(len(parameters["chemical_species"]), dtype=int)
     for ii in range(len(parameters["chemical_species"])):
         i_species[ii] = np.where(neutrals.values[:, 0] == parameters["chemical_species"][ii])[0]
         #  todo: Jordi, can you check this line? should it be beyond row index 4?
@@ -54,9 +54,9 @@ def pdeparams(pde, mesh, parameters):
 
     amu = 1.66e-27 * u.kg  # atomic mass unit
     # mass of neutrals (kg)
-    mass = (neutrals[i_species, 1][0] * amu)
+    mass = neutrals.values[i_species, 1] * amu
     # reference thermal conductivity (J/m*K)
-    ckappa0 = neutrals[i_species, 3][0]
+    ckappa0 = neutrals.values[i_species, 3]
     #  todo: in MATLAB version:
     #  todo: expKappa = table2array(neutrals(iSpecies,5));
     #  todo: expKappa = 0.75;
@@ -67,7 +67,7 @@ def pdeparams(pde, mesh, parameters):
     # todo: EUV.values starts at 4 above, should we do the same here?
     F74113_d = euv.values[2, 5:42] * float(euv.values[2, 3]) * 1e4
     # photo absortion cross section (m^2) # todo: verify with jordi.
-    crossSections_d = euv.values[i_species_euv + 4, 5:42] * float(euv.values[i_species_euv + 4, 3]) * u.m ** 2
+    crossSections_d = (euv.values[i_species_euv + 4, 5:42].T * euv.values[i_species_euv + 4, 3] * u.m ** 2).T
 
     # MSIS reference values
     # todo return: chi are the mass fractions (rho_i/rho) over altitude
