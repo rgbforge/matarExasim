@@ -92,36 +92,34 @@ def pdeparams(pde, mesh, parameters):
     # specific heat capacity (J/K*kg)
     cp = parameters["gamma"] * R / (parameters["gamma"] - 1)
     # reference scale height (m)
-    H0 = (R * parameters["temp_lower"] / g).decompose()
+    H0 = (R * T0 / g).decompose()
 
     # define reference quantities
     # reference velocity (m/s)
-    v0 = np.sqrt(parameters["gamma"] * R * parameters["temp_lower"]).decompose()
+    v0 = np.sqrt(parameters["gamma"] * R * T0).decompose()
     # reference time scale (s)
     t0 = (H0 / v0)
     # reference length scale ratio (dimensionless): mesh lower and upper bounds.
     R0 = (radius_in / H0).decompose()
     R1 = (radius_out / H0).decompose()
 
-
-
+    # reference viscosity and conductivity
     # reference dynamic viscosity (kg /m*s)
     # todo: matlab code:
     #  cmu0 = 2 * 1.3e-4;
     #  expMu = 0.5;
     #  kappa0 = chi(1,:)*ckappa0 * T0 ^ expKappa;
-    #  % kappa0 = ckappa0(2) * T0 ^ expKappa;
-    #  ckappai = ckappa0 / (chi(1,:) * ckappa0);
+    #  % kappa0 = ckappa0(2) * T0 ^ expKappa;      # what is this?
+    #  ckappai = ckappa0 / (chi(1,:) * ckappa0);  # do we need this?
     #  kappa0 = 0.4 * kappa0;
     #  alpha0 = kappa0 / (rho0 * cp);
     #  mu0 = cmu0 * (T0 / R) ^ expMu;
     #  nu0 = mu0 / rho0;
-    # todo: Jordi, should I multiply the line below by 2? do you want me to overwrite this line with the line above?
-    mu0 = (1.3e-4 * (u.kg / (u.K * u.s ** 2)) * (parameters["temp_lower"] / R) ** parameters["exp_mu"]).decompose()
-    # todo: Jordi, what is the size of kappa0?
+    # todo: Jordi, should I multiply the line below by 2?
+    cmu0 = 1.3e-4 * (u.kg / (u.K * u.s ** 2))
+    mu0 = (cmu0 * (T0 / R) ** parameters["exp_mu"]).decompose()
+    # todo: Jordi, what is the size of kappa0? should I scale it with 0.4
     kappa0 = chi[0, :] * ckappa0 * (T0 ** parameters["exp_kappa"])
-    # todo: Jordi, when do we need this? is this thermal diffusivity?
-    alpha0 = kappa0 / (rho0 * cp)
 
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
@@ -138,6 +136,7 @@ def pdeparams(pde, mesh, parameters):
     # the normalized EUV flux spectrum
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
+    # todo add from MATLAB: mass = mass/m; Jordi, do we need this?
 
     # dimensionless numbers
     # Grasshoff dimensionless number
@@ -147,7 +146,7 @@ def pdeparams(pde, mesh, parameters):
     # Froude dimensionless number
     Fr = omega * np.sqrt((H0 / g))
     #  ratio of kinetic to photoionization energy
-    Keuv = (parameters["gamma"] * k_B * parameters["temp_lower"]) / ((h * c) / parameters["lambda0"])
+    Keuv = (parameters["gamma"] * k_B * T0) / ((h * c) / parameters["lambda0"])
     #  the amount of particles in a given volume
     M = rho0 * (H0 ** 3) / m
 
@@ -198,6 +197,8 @@ def pdeparams(pde, mesh, parameters):
 
     # store external parameters
     # todo: Jordi, I am not sure how to convert this from your matlab code. ordering is different.
+    # todo MATLAB: pde.externalparam = [lambda,AFAC,F74113,reshape(crossSections',[37*nspecies,1])',
+    #  reshape(cchi',[4*(nspecies-1),1])',mass',ckappai'];
     pde['externalparam'] = np.hstack([lambda_EUV.value, AFAC, F74113.value, crossSections[0, :], ])
 
     # set solver parameters
@@ -218,4 +219,13 @@ def pdeparams(pde, mesh, parameters):
     mesh['boundaryexpr'] = [lambda p: (p[0, :] < R0 + parameters["boundary_epsilon"]),
                             lambda p: (p[0, :] > R1 - parameters["boundary_epsilon"])]
     mesh['boundarycondition'] = np.array([1, 2])  # Set boundary condition for each boundary
+
+    # todo: initial condition (Jordi, we should discuss how to implement this).
+    #  [s1, s2, s3] = size(mesh.dgnodes);
+    #  ndg = s1 * s3;
+    #  nc = 6;
+    #  xdg = reshape(mesh.dgnodes, [s2, ndg])';
+    #  paramsMSIS = [R0, latitude, longitude, year, doy, sec, F10p7, F10p7a, hbot, H, T0, rho0, Fr, m];
+    #  u0 = MSIS_initialCondition1D_pressure(xdg, paramsMSIS, indicesMSIS, mass);
+    #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
     return pde, mesh

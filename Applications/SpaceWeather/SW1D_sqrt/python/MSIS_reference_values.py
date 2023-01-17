@@ -14,7 +14,7 @@ def MSIS_reference_values(parameters, mass, n_radial_msis=101):
     :return: (1) rho0 : # todo describe size + units
                         initial density todo: verify with Jordi.
              (2) T0 : # todo describe size + units
-                        initial temperature todo: verify with Jordi.
+                        initial temperature at the lower altitude boundary.
              (3) chi : # todo describe size + units
                         mass fractions (rho_i/rho) over altitude
              (4) cchi : # todo describe size + units

@@ -47,8 +47,6 @@ parameters = {
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (500*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
-    "temp_lower": 200 * u.K,  # temperature at the lower bound (kelvin)
-    "temp_upper": 1000 * u.K,  # temperature at the upper bound (kelvin)
     "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
     "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
     "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
