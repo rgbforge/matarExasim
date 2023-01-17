@@ -411,7 +411,6 @@ def EUVsource1D(u, x, t, mu, eta):
     alpha = IcosChi * alpha1 + (1 - IcosChi) * (IsinChi * alpha2 + (1 - IsinChi) * 1e2)
 
     Chi = zeros([nspecies,1])
-    dChidr = zeros([nspecies,1])
     Chi[0] = 1.0
 
     for iSpecies in range(2, nspecies+1):
@@ -500,15 +499,12 @@ def thermalConductivity(x, mu, eta):
 
     #Compute weighted density compositions (n_i/rho = Chi/mi)
     Chi = zeros([nspecies,1])
-    dChidr = zeros([nspecies,1])
     Chi[0] = 1.0
 
     for iSpecies in range(2, nspecies+1):
         coeffsDensity = eta[(3+nspecies)*nWaves+4*(iSpecies-2):(3+nspecies)*nWaves+4*(iSpecies-1)]
         Chi[iSpecies-1] = coeffsDensity[0]*exp(coeffsDensity[1]*(r-R0)*H0) + coeffsDensity[2]*exp(coeffsDensity[3]*(r-R0)*H0)
         Chi[0] = Chi[0] - Chi[iSpecies-1]
-
-    mass = eta[(3+nspecies)*nWaves+4*(nspecies-1):(3+nspecies)*nWaves+4*(nspecies-1)+nspecies]
 
     kappa = 0.0
     ckappai = eta[(3+nspecies)*nWaves+4*(nspecies-1)+nspecies:(3+nspecies)*nWaves+4*(nspecies-1)+2*nspecies]

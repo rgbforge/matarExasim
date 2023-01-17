@@ -41,6 +41,7 @@ def get_MSIS_species(MSIS_output, parameters):
             MSIS[ii, :, :, :] = MSIS_output[0, :, :, :, 9] * 1 / u.m ** 3
     return MSIS
 
+
 def MSIS_reference_values(parameters, mass):
     """A function to get MSIS reference values,
     i.e. the reference density (rho0), temperature (T0), mass fraction (chi), and coefficients of the fit (cchi).
@@ -49,19 +50,24 @@ def MSIS_reference_values(parameters, mass):
     :param mass: molecular mass of each species (we need it to compute mass density from species number densities).
 
     :return: (1) rho0 : type: float, units: kilogram/meters^3]
-                        initial density todo: verify with Jordi.
+                        reference density at the lower altitude boundary (100km) todo: verify with Jordi.
              (2) T0 : type: float, units: Kelvin
-                        initial temperature at the lower altitude boundary.
+                        reference temperature at the lower altitude boundary (100km).
              (3) chi : # todo describe size + units
                         mass fractions (rho_i/rho) over altitude
-             (4) cchi : # todo describe size + units
+             (4) cchi : [n_species -1, 4] (skip oxygen here)
+             # todo describe size + units
                         coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
+                        returned [a1, a2, a3, a4]
+                        start at 0 h-H0
+                        H0 = altitude in meters.
+
     """
     # we do not need the mesh here, we only need the position of the lower and upper boundary
     # we want to obtain certain quantities at the lower boundary + a distribution in space of the partial densities
     # to do that we can use any radial distribution of points we want, not necessarily linked to the mesh
     # Actually we want more points, so don't use resolution, but another parameter. I set it to have 101 points.
-    # todo: looks like you use 5000 points... ?
+    # todo: looks like you use 5000 points... ? but on H grid so might be 101 in km?
     altitude_mesh = np.linspace(parameters["altitude_lower"].to(u.km).value,
                                 parameters["altitude_upper"].to(u.km).value,
                                 parameters["n_radial_MSIS"])
@@ -73,8 +79,8 @@ def MSIS_reference_values(parameters, mass):
     #   lat = -90 + angleres:angleres: 90 - angleres;
     #   long = -180:angleres: 180 - angleres;
     #   https://swxtrec.github.io/pymsis/examples/plot_surface_animation.html#sphx-glr-examples-plot-surface-animation-py
-    longitude_mesh = np.linspace(-180, 180, parameters["n_longitude_MSIS"])
-    latitude_mesh = np.linspace(-90, 90, parameters["n_latitude_MSIS"])
+    longitude_mesh = np.linspace(-180, 175, parameters["n_longitude_MSIS"])
+    latitude_mesh = np.linspace(-85, 85, parameters["n_latitude_MSIS"])
 
     # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
@@ -98,7 +104,6 @@ def MSIS_reference_values(parameters, mass):
     # initialize the dataset we need. dimensions: (nspecies, nlons, nlats, nalts)
     MSIS = get_MSIS_species(MSIS_output=MSIS_output, parameters=parameters)
 
-
     # # loop over all altitudes and compute the mean temperature and density.
     # temperature_altitude_mean = np.zeros(len(altitude_mesh))
     # number_density_mean_species = np.zeros((len(altitude_mesh), len(parameters["chemical_species"])))
@@ -111,16 +116,18 @@ def MSIS_reference_values(parameters, mass):
     # msis_total_mass_density = output_msis[0, :, :, :, 0] * u.kg / u.m ** 3
     # msis_temperature = output_msis[0, :, :, :, -1] * u.K
 
-
-
-
-
-
     # todo: clarify computation of chi.
     #  MATLAB code:
-    #  rhoh = nh * mass;
-    #  chi = (nh. * mass')./rhoh;
+    #  rhoh = nh * mass;  size [nalt]
+    #  chi = (nh. * mass')./rhoh; partial density of the species/ (total density) = mass fraction.
+    #  size [nalts, nspecies]
 
     # # todo: Jordi, could you please help me convert these values? I not sure how to obtain them.
     # return rho0, T0, chi, cchi
+
+    # cchi = zeros(nspecies - 1, 4);
+    # for ispe = 1:nspecies - 1
+    # cchi(ispe,:) = coeffvalues(fit(h
+    # '-H0,chi(:,ispe+1),' exp2 '));
+    # end
     return 0, 0, 0, 0

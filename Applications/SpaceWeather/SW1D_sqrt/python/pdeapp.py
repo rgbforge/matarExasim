@@ -45,7 +45,7 @@ parameters = {
     "latitude": 0*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
-    "altitude_upper": (500*u.km).to(u.m),  # computational domain altitude upper bound (meters)
+    "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
     "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
     "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
@@ -55,8 +55,8 @@ parameters = {
     "exp_mu": 0.5,  # exponential of reference mu
     "exp_Kappa": 0.75,  # exponential of reference kappa
     "tau_a": 5,  # parameter relating to solver. #todo: define this better.
-    "ref_mu_scale": 1,  # multiply the reference value of the dynamic viscosity by this value
-    "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
+    "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
+    "ref_kappa_scale": 0.4,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
     "F10.7_uncertainty": 0,  # add the reference value of the F10.7
     "p_order": 2,  # order of polynomial in solver
@@ -81,8 +81,8 @@ parameters = {
     "nu_eddy": 100,  # eddy viscosity
     "alpha_eddy": 35,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation.
-    "n_longitude_MSIS": 73,  # number of mesh points in the longitude direction for MSIS simulation.
-    "n_latitude_MSIS": 73  # number of mesh points in the longitude direction for MSIS simulation.
+    "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation.
+    "n_latitude_MSIS": 35  # number of mesh points in the longitude direction for MSIS simulation.
 }
 
 # run executable file to compute solution and store it in dataout folder

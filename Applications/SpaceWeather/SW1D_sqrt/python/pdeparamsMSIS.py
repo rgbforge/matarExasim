@@ -57,16 +57,12 @@ def pdeparams(pde, mesh, parameters):
     mass = neutrals.values[i_species, 1] * amu
     # reference thermal conductivity (J/m*K)
     ckappa0 = neutrals.values[i_species, 3]
-    #  todo: in MATLAB version:
-    #  todo: expKappa = table2array(neutrals(iSpecies,5));
-    #  todo: expKappa = 0.75;
-    #  todo: Jordi, what should I use here?
     # initially in Armstrongs
     lambda_d = 0.5 * (euv.values[0, 5:42] + euv.values[1, 5:42]) * 1e-10
     AFAC = euv.values[3, 5:42]
     # todo: EUV.values starts at 4 above, should we do the same here?
     F74113_d = euv.values[2, 5:42] * float(euv.values[2, 3]) * 1e4
-    # photo absortion cross section (m^2) # todo: verify with jordi.
+    # photo absortion cross section (m^2)
     crossSections_d = (euv.values[i_species_euv + 4, 5:42].T * euv.values[i_species_euv + 4, 3] * u.m ** 2).T
 
     # MSIS reference values
@@ -103,17 +99,16 @@ def pdeparams(pde, mesh, parameters):
     #  cmu0 = 2 * 1.3e-4;
     #  expMu = 0.5;
     #  kappa0 = chi(1,:)*ckappa0 * T0 ^ expKappa;
-    #  % kappa0 = ckappa0(2) * T0 ^ expKappa;      # what is this?
     #  ckappai = ckappa0 / (chi(1,:) * ckappa0);  # do we need this?
     #  kappa0 = 0.4 * kappa0;
     #  alpha0 = kappa0 / (rho0 * cp);
     #  mu0 = cmu0 * (T0 / R) ^ expMu;
     #  nu0 = mu0 / rho0;
-    # todo: Jordi, should I multiply the line below by 2?
     cmu0 = 1.3e-4 * (u.kg / (u.K * u.s ** 2))
     mu0 = (cmu0 * (T0 / R) ** parameters["exp_mu"]).decompose()
-    # todo: Jordi, what is the size of kappa0? should I scale it with 0.4
-    kappa0 = chi[0, :] * ckappa0 * (T0 ** parameters["exp_kappa"])
+    # todo: Jordi, what is the size of kappa0? it is scalar!! please check :)
+    kappa0 = (chi[0, :] * ckappa0) * (T0 ** parameters["exp_kappa"])
+    ckappai = ckappa0 / (chi[0, :] * ckappa0)  # todo: make sure that denominator is scalar.
 
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
@@ -131,6 +126,8 @@ def pdeparams(pde, mesh, parameters):
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
     # todo add from MATLAB: mass = mass/m; Jordi, do we need this?
+    #  size = array of size 4, first element is 1. double check this.
+    mass = mass/m
 
     # dimensionless numbers
     # Grasshoff dimensionless number
@@ -199,10 +196,14 @@ def pdeparams(pde, mesh, parameters):
     #                                   reshape(cchi',[4*(nspecies-1),1])',
     #                                   mass',
     #                                   ckappai'];
+    #  we have to make sure reshaping is the same. reshape by rows.
     pde['externalparam'] = np.hstack([lambda_EUV.value,  # 0
                                       AFAC,  # 1
                                       F74113.value,  # 2
-                                      crossSections[0, :],  # 3
+                                      crossSections.flatten(),  # 3
+                                      cchi.flatten(),  # 4
+                                      mass,  # 5 todo: make sure row vector
+                                      ckappai  # 6
                                       ])
 
     # set solver parameters
