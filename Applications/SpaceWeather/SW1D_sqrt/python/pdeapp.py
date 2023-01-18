@@ -53,7 +53,7 @@ parameters = {
     "gamma": 5/3,  # ratio of specific heats
     "reference_temp_lower": 1,  # reference value for temperature at the lower boundary
     "exp_mu": 0.5,  # exponential of reference mu
-    "exp_Kappa": 0.75,  # exponential of reference kappa
+    "exp_kappa": 0.75,  # exponential of reference kappa
     "tau_a": 5,  # parameter relating to solver. #todo: define this better.
     "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 0.4,  # multiply the reference value of the thermal conductivity by this value

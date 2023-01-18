@@ -13,7 +13,7 @@ def get_MSIS_species(MSIS_output, parameters):
 
     :param MSIS_output: MSIS output for the requested species.
     :param parameters: dictionary defined in pdeapp.py with all the model parameters (solver and physical parameters).
-    :return: MSIS tensor results dimensions: (nspecies, n_longitude, n_latitude, n_altitude)
+    :return: MSIS tensor results dimensions: (n_species, n_longitude, n_latitude, n_altitude)
     """
     # initialize the dataset we need.
     MSIS = np.zeros((len(parameters["chemical_species"]),
@@ -45,14 +45,14 @@ def get_MSIS_species(MSIS_output, parameters):
 
 
 def data_model_error(coefficients, altitude_low_boundary, altitude_mesh, data):
-    """ A function to evaluate the model and data misfit. We later minimize this function to find the optimal
-    coefficients.
+    """ A function to evaluate the model and data misfit (via the L2 norm).
+    We later minimize this function to find the optimal coefficients.
 
     :param coefficients: [a1, a2, a3, a4]
-    :param altitude_low_boundary:
-    :param altitude_mesh: mesh in altitude.
-    :param data: mass fraction of a certain specie
-    :return:
+    :param altitude_low_boundary: altitude lower boundary (in meters).
+    :param altitude_mesh: MSIS results altitude mesh (in meters).
+    :param data: mass fraction of a certain specie (dimensionless quantity).
+    :return: error in L2-norm.
     """
     # # the parameters are stored as a vector of values, so unpack the vector
     a1, a2, a3, a4 = coefficients
@@ -63,19 +63,25 @@ def data_model_error(coefficients, altitude_low_boundary, altitude_mesh, data):
     return np.linalg.norm(model_eval - data)
 
 
-def coefficient_fit(parameters, altitude_mesh, data):
-    """ A function to fit data ~ a1 * exp(a2 * (h - H0)) + a3 * exp(a4 * (h - H0))
+def coefficient_fit(altitude_lower, altitude_mesh, data):
+    """ A function to fit:
 
-        :param altitude_mesh: MSIS results altitude mesh (in km).
-        :param parameters: dictionary defined in pdeapp.py with all the model parameters.
-        :param data: mass fraction of a particular species.
-        :return: [a1, a2, a3, a4] **optimal in L2 sense**
+            data ~ a1 * exp(a2 * (h - H0)) + a3 * exp(a4 * (h - H0))
+
+            h - altitude mesh (in m)
+            H0 - lower altitude boundary (in m)
+            data - mass fraction of a particular species (dimensionless quantity)
+
+    :param altitude_mesh: MSIS results altitude mesh (in km or m).
+    :param altitude_lower: altitude lower boundary (in km or m).
+    :param data: mass fraction of a particular species (dimensionless quantity).
+    :return: optimal coefficients [a1, a2, a3, a4] (in the L2-sense)
     """
-    # minimize the loss function using a conjugate gradient optimizer.
+    # minimize the loss function using a conjugate gradient algorithm.
     minimization_results = opt.minimize(fun=lambda *args: data_model_error(*args),
-                                        x0=[0, 0, 0, 0],
+                                        x0=np.array([0, 0, 0, 0]),
                                         method="CG",
-                                        args=(parameters["altitude_lower"].to(u.m).value,
+                                        args=(altitude_lower.to(u.m).value,
                                               altitude_mesh.to(u.m).value,
                                               data))
     return minimization_results["x"]
@@ -83,40 +89,39 @@ def coefficient_fit(parameters, altitude_mesh, data):
 
 def MSIS_reference_values(parameters, mass):
     """A function to get MSIS reference values,
-    i.e. the reference density (rho0), temperature (T0), mass fraction (chi), and coefficients of the fit (cchi).
+    i.e. the reference density (rho0), temperature (T0), mass fraction (chi), and coefficients of the fit (c_chi).
 
     :param parameters: dictionary defined in pdeapp.py with all the model parameters (solver and physical parameters).
     :param mass: molecular mass of each species (we need it to compute mass density from species number densities).
 
     :return: (1) rho0 : type: float, units: [kg/m^3]
-                        reference density at the lower altitude boundary (100km) todo: verify with Jordi.
+                        reference density at the lower altitude boundary (e.g. @ 100km)
              (2) T0 : type: float, units: [K]
-                        reference temperature at the lower altitude boundary (100km).
-             (3) mass_fraction_species : type: [n_altitude_MSIS, n_species], units: [dimensionless]
+                        reference temperature at the lower altitude boundary (e.g. @ 100km).
+             (3) chi : type: array size [n_altitude_MSIS, n_species], units: [dimensionless]
                         mass fractions (rho_i/rho) over altitude
-             (4) optimal_coefficient : [n_species -1, 4] (skip oxygen here), units: [dimensionless]
+             (4) c_chi : type: array size [n_species -1, 4] (skip oxygen here), units: [dimensionless]
                         coefficients of the fit: mass fraction ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
                         returned [a1, a2, a3, a4]
 
     """
-    # we do not need the mesh here, we only need the position of the lower and upper boundary
-    # we want to obtain certain quantities at the lower boundary + a distribution in space of the partial densities
-    # to do that we can use any radial distribution of points we want, not necessarily linked to the mesh
-    # Actually we want more points, so don't use resolution, but another parameter. I set it to have 101 points.
+    # define altitude uniform mesh.
     altitude_mesh = np.linspace(parameters["altitude_lower"].to(u.km).value,
                                 parameters["altitude_upper"].to(u.km).value,
                                 parameters["n_radial_MSIS"])
+    # define longitude uniform mesh.
     longitude_mesh = np.linspace(-180, 175, parameters["n_longitude_MSIS"])
+    # define latitude uniform mesh.
     latitude_mesh = np.linspace(-85, 85, parameters["n_latitude_MSIS"])
 
     # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
 
-    # run MSIS, output is of dimensions: (ndates, nlons, nlats, nalts, 11)
+    # run MSIS, output is a tensor of dimensions: (n_dates, n_longitude, n_latitude, n_altitude, 11)
     # 11 stands for each species in the following order:
-    # [Total mass density (kg / m3),  N2 density (m-3), O2 density (m-3), O density (m-3),
-    #  He density (m-3), H density (m-3), Ar density (m-3), N density (m-3),
-    #  Anomalous oxygen density (m-3), NO density (m-3), Temperature(K)]
+    #  (1) Total mass density (kg / m3),  (2) N2 density (m-3), (3) O2 density (m-3), (4) O density (m-3),
+    #  (5) He density (m-3), (6) H density (m-3), (7) Ar density (m-3), (8) N density (m-3),
+    #  (9) Anomalous oxygen density (m-3), (10) NO density (m-3), (11) Temperature(K)
     MSIS_output = msis.run(dates=parameters["date"],  # (list of dates) – Dates and times of interest
                            lons=longitude_mesh,  # (list of floats) – Longitudes of interest
                            lats=latitude_mesh,  # (list of floats) – Latitudes of interest
@@ -135,24 +140,24 @@ def MSIS_reference_values(parameters, mass):
     MSIS = get_MSIS_species(MSIS_output=MSIS_output, parameters=parameters)
 
     # loop over all altitudes and compute the mean density
-    number_density_mean_species = np.zeros((len(altitude_mesh), len(parameters["chemical_species"]))) * (1 / u.m**3)
+    number_density_mean_species = np.zeros((len(altitude_mesh), len(parameters["chemical_species"]))) * (1 / u.m ** 3)
     for ii in range(len(altitude_mesh)):
         for jj in range(len(parameters["chemical_species"])):
-            number_density_mean_species[ii, jj] = np.mean(MSIS[jj, :, :, ii].value) * (1 / u.m**3)
+            number_density_mean_species[ii, jj] = np.mean(MSIS[jj, :, :, ii].value) * (1 / u.m ** 3)
 
     # density mean total, size [n_altitude]
     density_mean_total = np.dot(number_density_mean_species, mass)
-    # mass fraction of the species, size [n_altitude, n_species], in matlab this is called "chi"
-    mass_fraction_species = np.zeros((parameters["n_radial_MSIS"], len(parameters["chemical_species"])))
+    # mass fraction of the species, size [n_altitude, n_species], in matlab this variable is called "chi".
+    chi = np.zeros((parameters["n_radial_MSIS"], len(parameters["chemical_species"])))
     species_mass = number_density_mean_species * mass
     for ii in range(len(parameters["chemical_species"])):
-        mass_fraction_species[:, ii] = (species_mass[:, ii] / density_mean_total).value
+        chi[:, ii] = (species_mass[:, ii] / density_mean_total).value  # dimensionless
 
-    # optimal coefficients to fit to exponential function, in MATLAB this is called "cchi".
-    optimal_coefficient = np.zeros((len(parameters["chemical_species"]) - 1, 4))
-    # skip oxygen since it does not fit well to the model.
+    # optimal coefficients to fit to exponential function, in MATLAB this variable is called "cchi".
+    c_chi = np.zeros((len(parameters["chemical_species"]) - 1, 4))
+    # skip oxygen since it does not fit well to the exponential sum model.
     for ii in range(len(parameters["chemical_species"]) - 1):
-        optimal_coefficient[ii, :] = coefficient_fit(parameters=parameters,
-                                                     data=mass_fraction_species[:, ii + 1],  # skip oxygen
-                                                     altitude_mesh=altitude_mesh*u.km)
-    return density_mean_total[0], T0, mass_fraction_species, optimal_coefficient
+        c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"],
+                                       data=chi[:, ii + 1],  # skip oxygen
+                                       altitude_mesh=altitude_mesh * u.km)
+    return density_mean_total[0], T0, chi, c_chi
