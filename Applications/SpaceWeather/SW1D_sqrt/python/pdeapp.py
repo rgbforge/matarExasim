@@ -1,5 +1,5 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Jan 11th, 2022. [OI]
+Latest update: Jan 17th, 2022. [OI]
 """
 # import external modules
 import os
@@ -36,12 +36,12 @@ pde['mpiprocs'] = 1  # number of MPI processors
 parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
-    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hh:mm:ss
+    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0*u.s,  # restart at given time step (second)
-    "longitude": 0*u.deg,  # longitude coordinates #todo: try San Diego coords (long=32.7, lat=360-117.16)
+    "longitude": 0*u.deg,  # longitude coordinates # todo: try San Diego coords (long=32.7, lat=-117.16)
     "latitude": 0*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
@@ -51,19 +51,17 @@ parameters = {
     "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
     "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
-    "reference_temp_lower": 1,  # reference value for temperature at the lower boundary
     "exp_mu": 0.5,  # exponential of reference mu
     "exp_kappa": 0.75,  # exponential of reference kappa
-    "tau_a": 5,  # parameter relating to solver. #todo: define this better.
+    "tau_a": 5,  # parameter relating to solver. # todo: define this better.
     "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 0.4,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
-    "F10.7_uncertainty": 0,  # add the reference value of the F10.7
     "p_order": 2,  # order of polynomial in solver
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
     "ext_stab": 1,  # solver parameter # todo: understand this better.
-    "tau": 0.0,  # discontinuous galerkin stabilization parameter # TODO: what is tau_a vs tau?
+    "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
     "linear_solver_tol": 1e-16,  # GMRES (linear solver) solver tolerance
     "linear_solver_iter": 30,  # GMRES (linear solver) solver iterations
@@ -77,12 +75,12 @@ parameters = {
     # measured in solar flux units uncertainty
     "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
-    "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for.
+    "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
     "nu_eddy": 100,  # eddy viscosity
     "alpha_eddy": 35,  # eddy conductivity
-    "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation.
-    "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation.
-    "n_latitude_MSIS": 35  # number of mesh points in the longitude direction for MSIS simulation.
+    "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
+    "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation
+    "n_latitude_MSIS": 35  # number of mesh points in the longitude direction for MSIS simulation
 }
 
 # run executable file to compute solution and store it in dataout folder
@@ -104,7 +102,7 @@ compilerstr = Gencode.compilecode(pde)
 runstr = Gencode.runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt("time.txt", np.array([time.time() - start_time]))
+np.savetxt("time.txt", float(time.time() - start_time))
 
 # get solution from output files in dataout folder
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")

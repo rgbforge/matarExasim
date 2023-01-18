@@ -48,12 +48,10 @@ def pdeparams(pde, mesh, parameters):
     i_species_euv = np.zeros(len(parameters["chemical_species"]), dtype=int)
     for ii in range(len(parameters["chemical_species"])):
         i_species[ii] = np.where(neutrals.values[:, 0] == parameters["chemical_species"][ii])[0]
-        #  todo: Jordi, can you check this line? should it be beyond row index 4?
-        #  todo: the line in MATLAB:
-        #  todo: iSpeciesEUV(isp) = find(strcmp(table2array(EUV(:, 2)), species(isp)));
         i_species_euv[ii] = np.where(euv.values[4:, 1] == parameters["chemical_species"][ii])[0]
 
-    amu = 1.66e-27 * u.kg  # atomic mass unit
+    # atomic mass unit
+    amu = 1.66e-27 * u.kg
     # mass of neutrals (kg)
     mass = np.array(neutrals.values[i_species, 1], dtype=float) * amu
     # reference thermal conductivity (J/m*K)
@@ -61,16 +59,15 @@ def pdeparams(pde, mesh, parameters):
     # initially in Armstrongs
     lambda_d = 0.5 * (euv.values[0, 5:42] + euv.values[1, 5:42]) * 1e-10
     AFAC = euv.values[3, 5:42]
-    # todo: EUV.values starts at 4 above, should we do the same here?
     F74113_d = euv.values[2, 5:42] * float(euv.values[2, 3]) * 1e4
     # photo absortion cross section (m^2)
     crossSections_d = (euv.values[i_species_euv + 4, 5:42].T * euv.values[i_species_euv + 4, 3] * u.m ** 2).T
 
-    # MSIS reference values
-    # todo return: chi are the mass fractions (rho_i/rho) over altitude
-    # todo return: cchi are the coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
+    # get MSIS reference values
+    # chi are the mass fractions (rho_{species}/rho) over MSIS uniform altitude mesh
+    # c_chi are the coefficients ai of the fit: chi ~ a1*exp(a2*(h-H0)) + a3*exp(a4*(h-H0))
     # for each of the species except one (atomic O) which is computed as 1-sum{chi}
-    rho0, T0, chi, cchi = MSIS_reference_values(parameters=parameters, mass=mass)
+    rho0, T0, chi, c_chi = MSIS_reference_values(parameters=parameters, mass=mass)
 
     # define physical quantities
     m = mass[0]
@@ -95,21 +92,10 @@ def pdeparams(pde, mesh, parameters):
     R1 = (radius_out / H0).decompose()
 
     # reference viscosity and conductivity
-    # reference dynamic viscosity (kg /m*s)
-    # todo: matlab code:
-    #  cmu0 = 2 * 1.3e-4;
-    #  expMu = 0.5;
-    #  kappa0 = chi(1,:)*ckappa0 * T0 ^ expKappa;
-    #  ckappai = ckappa0 / (chi(1,:) * ckappa0);  # do we need this?
-    #  kappa0 = 0.4 * kappa0;
-    #  alpha0 = kappa0 / (rho0 * cp);
-    #  mu0 = cmu0 * (T0 / R) ^ expMu;
-    #  nu0 = mu0 / rho0;
-    cmu0 = 1.3e-4 * (u.kg / (u.K * u.s ** 2))
-    mu0 = (cmu0 * (T0 / R) ** parameters["exp_mu"]).decompose()
-    # todo: Jordi, what is the size of kappa0? it is scalar!! please check :)
-    kappa0 = (chi[0, :] * ckappa0) * (T0 ** parameters["exp_kappa"])
-    ckappai = ckappa0 / (chi[0, :] * ckappa0)  # todo: make sure that denominator is scalar.
+    c_mu0 = 1.3e-4 * (u.kg / (u.K * u.s ** 2))
+    mu0 = (c_mu0 * ((T0 / R) ** parameters["exp_mu"])).decompose()
+    kappa0 = np.dot(chi[0, :], ckappa0) * (T0.value ** parameters["exp_kappa"]) * (u.joule / (u.K * u.m * u.s))
+    c_kappa_i = ckappa0 / np.dot(chi[0, :], ckappa0)
 
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
@@ -126,8 +112,7 @@ def pdeparams(pde, mesh, parameters):
     # the normalized EUV flux spectrum
     # todo: add units
     F74113 = F74113_d * (H0 ** 2 * t0)
-    # todo add from MATLAB: mass = mass/m; Jordi, do we need this?
-    #  size = array of size 4, first element is 1. double check this.
+    # non-dimensional mass (scaled with mass of oxygen)
     mass = mass/m
 
     # dimensionless numbers
@@ -137,9 +122,9 @@ def pdeparams(pde, mesh, parameters):
     Pr = (mu0 * cp / kappa0).decompose()
     # Froude dimensionless number
     Fr = omega * np.sqrt((H0 / g))
-    #  ratio of kinetic to photoionization energy
+    # ratio of kinetic to photoionization energy
     Keuv = (parameters["gamma"] * k_B * T0) / ((h * c) / parameters["lambda0"])
-    #  the amount of particles in a given volume
+    # the amount of particles in a given volume
     M = rho0 * (H0 ** 3) / m
 
     # set time parameters
@@ -167,6 +152,7 @@ def pdeparams(pde, mesh, parameters):
                                     M.value,  # 5
                                     parameters["euv_efficiency"],  # 6
                                     declination_sun0,  # 7
+                                    # todo: Jordi, does the F10.7 units matter?
                                     F10p7.value + parameters["F10p7_uncertainty"].value,  # 8
                                     F10p7_81.value + parameters["F10p7-81_uncertainty"].value,  # 9
                                     day_of_year,  # 10
@@ -181,30 +167,21 @@ def pdeparams(pde, mesh, parameters):
                                     rho0.value,  # 19
                                     t0.value,  # 20
                                     parameters["tau_a"],  # 21
+                                    # todo: Jordi, should we keep longitude and latitude in degrees.
                                     parameters["latitude"].value,  # 22
                                     parameters["longitude"].value,  # 23
                                     parameters["coord"],  # 24
-                                    parameters["date"][:4]  # 25 # todo why do we need this?
+                                    parameters["date"][:4]  # 25 # todo: Jordi, why do we need this?
                                     ])
 
     # store external parameters
-    # todo: Jordi, I am not sure how to convert this from your matlab code. how does reshape translate? might be best
-    #  if you translate this line.
-    # todo MATLAB: pde.externalparam = [lambda,
-    #                                   AFAC,
-    #                                   F74113,
-    #                                   reshape(crossSections',[37*nspecies,1])',
-    #                                   reshape(cchi',[4*(nspecies-1),1])',
-    #                                   mass',
-    #                                   ckappai'];
-    #  we have to make sure reshaping is the same. reshape by rows.
     pde['externalparam'] = np.hstack([lambda_EUV.value,  # 0
                                       AFAC,  # 1
                                       F74113.value,  # 2
                                       crossSections.flatten(),  # 3
-                                      cchi.flatten(),  # 4
-                                      mass,  # 5 todo: make sure row vector
-                                      ckappai  # 6
+                                      c_chi.flatten(),  # 4 todo: make sure flattening is done properly.
+                                      mass,  # 5
+                                      c_kappa_i  # 6
                                       ])
 
     # set solver parameters
