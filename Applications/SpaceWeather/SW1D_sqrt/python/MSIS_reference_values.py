@@ -48,11 +48,9 @@ def data_model_error(coefficients, altitude_low_boundary, altitude_mesh, data):
     """ A function to evaluate the model and data misfit (via the L2 norm).
     We later minimize this function to find the optimal coefficients.
 
-    # todo: Jordi, Helium is not a good fit for Jan 1st, 2013.
-
     :param coefficients: [a1, a2, a3, a4]
-    :param altitude_low_boundary: altitude lower boundary (in meters).
-    :param altitude_mesh: MSIS results altitude mesh (in meters).
+    :param altitude_low_boundary: altitude lower boundary (in km).
+    :param altitude_mesh: MSIS results altitude mesh (in km).
     :param data: mass fraction of a certain specie (dimensionless quantity).
     :return: error in L2-norm.
     """
@@ -74,8 +72,8 @@ def coefficient_fit(altitude_lower, altitude_mesh, data):
             H0 - lower altitude boundary (in m)
             data - mass fraction of a particular species (dimensionless quantity)
 
-    :param altitude_mesh: MSIS results altitude mesh (in km or m).
-    :param altitude_lower: altitude lower boundary (in km or m).
+    :param altitude_mesh: MSIS results altitude mesh (in km).
+    :param altitude_lower: altitude lower boundary (in km).
     :param data: mass fraction of a particular species (dimensionless quantity).
     :return: optimal coefficients [a1, a2, a3, a4] (in the L2-sense)
     """
@@ -83,8 +81,8 @@ def coefficient_fit(altitude_lower, altitude_mesh, data):
     minimization_results = opt.minimize(fun=lambda *args: data_model_error(*args),
                                         x0=np.array([0, 0, 0, 0]),
                                         method="CG",
-                                        args=(altitude_lower.to(u.m).value,
-                                              altitude_mesh.to(u.m).value,
+                                        args=(altitude_lower.to(u.km).value,
+                                              altitude_mesh.to(u.km).value,
                                               data))
     return minimization_results["x"]
 
@@ -159,7 +157,7 @@ def MSIS_reference_values(parameters, mass):
     c_chi = np.zeros((len(parameters["chemical_species"]) - 1, 4))
     # skip oxygen since it does not fit well to the exponential sum model.
     for ii in range(len(parameters["chemical_species"]) - 1):
-        c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"],
+        c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"],  # in km
                                        data=chi[:, ii + 1],  # skip oxygen
                                        altitude_mesh=altitude_mesh * u.km)
     return density_mean_total[0], T0, chi, c_chi

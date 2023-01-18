@@ -12,11 +12,11 @@ import spaceweather as sw
 from datetime import date
 import os
 # import internal modules
-# Add Exasim package to python search path
-cdir = os.getcwd()
-ii = cdir.find("Exasim")
-exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
-import Preprocessing
+# # Add Exasim package to python search path
+# cdir = os.getcwd()
+# ii = cdir.find("Exasim")
+# exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
+# import Preprocessing
 
 
 def pdeparams(pde, mesh, parameters):
@@ -208,12 +208,12 @@ def pdeparams(pde, mesh, parameters):
     mesh['boundaryexpr'] = [lambda p: (p[0, :] < R0 + parameters["boundary_epsilon"]),
                             lambda p: (p[0, :] > R1 - parameters["boundary_epsilon"])]
     mesh['boundarycondition'] = np.array([1, 2])  # Set boundary condition for each boundary
-    mesh["dgnodes"] = Preprocessing.createdgnodes(mesh["p"],
-                                                  mesh["t"],
-                                                  mesh["f"],
-                                                  mesh["curvedboundary"],
-                                                  mesh["curvedboundaryexpr"],
-                                                  pde["porder"])
+    # mesh["dgnodes"] = Preprocessing.createdgnodes(mesh["p"],
+    #                                               mesh["t"],
+    #                                               mesh["f"],
+    #                                               mesh["curvedboundary"],
+    #                                               mesh["curvedboundaryexpr"],
+    #                                               pde["porder"])
 
     # todo: initial condition (Jordi, we should discuss how to implement this).
     #  [s1, s2, s3] = size(mesh.dgnodes);
@@ -224,7 +224,7 @@ def pdeparams(pde, mesh, parameters):
     #  u0 = MSIS_initialCondition1D_pressure(xdg, paramsMSIS, indicesMSIS, mass);
     #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
     s1, s2, s3 = np.shape(mesh["dgnodes"])
-    nc = 6  # todo: Jordi, can you define what this is?
     xdg = np.reshape(mesh["dgnodes"], [s2, s1 * s3])
-    u0 = MSIS_initial_condition_1D_pressure(xdg, paramsMSIS, indicesMSIS, mass)
+    # TODO: CAN I JUST GET THE MESH POINTS USING MESH["P"]? IS "DGNODES" NECESSARY?
+    # u0 = MSIS_initial_condition_1D_pressure(xdg, paramsMSIS, indicesMSIS, mass)
     return pde, mesh
