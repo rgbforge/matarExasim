@@ -7,20 +7,27 @@ import astropy.units as u
 from Applications.SpaceWeather.SW1D_sqrt.python.MSIS_reference_values import get_MSIS_species
 
 
-def MSIS_initial_condition_1D_pressure(xdg,
+def MSIS_initial_condition_1D_pressure(x_dg,
                                        altitude_mesh_grid,
                                        parameters,
                                        mass,
                                        T0,
                                        m,
                                        rho0,
-                                       H,
+                                       H0,
                                        Fr,
                                        R0,
                                        number_of_components=3,
                                        number_of_dimensions=1):
     """
 
+    :param R0:
+    :param H0:
+    :param Fr:
+    :param rho0:
+    :param m:
+    :param T0:
+    :param x_dg:
     :param parameters:
     :param number_of_components: default is 3.
     :param number_of_dimensions: default is 1.
@@ -117,14 +124,14 @@ def MSIS_initial_condition_1D_pressure(xdg,
     # todo:
     #  drT = rTp - rTm;
     #  drTdr = H * drT / (2 * dr);
-    central_rho_temperature = H * (rho_temperature_plus - rho_temperature_minus) / (2 * parameters["initial_dr"])
+    central_rho_temperature = H0 * (rho_temperature_plus - rho_temperature_minus) / (2 * parameters["initial_dr"])
 
 
 
     # todo:
     #  acc = (Fr ^ 2 * xdg * cos(lat0) ^ 2 - (r0. / xdg). ^ 2);
     #  rho = drTdr. / acc;
-    acc = (Fr ** 2) * xdg * (np.cos(parameters["latitude"].to(u.rad).value) ** 2) - (R0 / xdg) ** 2
+    acc = (Fr ** 2) * x_dg * (np.cos(parameters["latitude"].to(u.rad).value) ** 2) - (R0 / x_dg) ** 2
     rho = central_rho_temperature / acc
 
 
@@ -143,14 +150,14 @@ def MSIS_initial_condition_1D_pressure(xdg,
     # todo:
     #  drdx = gradient(r). / gradient(xdg);
     #  dsrTdx = gradient(srT). / gradient(xdg);
-    central_log_rho = np.gradient(log_rho, xdg)
-    central_sqrt_rho_temperature = np.gradient(sqrt_rho_temperature, xdg)
+    central_log_rho = np.gradient(log_rho, x_dg)
+    central_sqrt_rho_temperature = np.gradient(sqrt_rho_temperature, x_dg)
 
     # todo:
     #  u = zeros(npoints, nc * (nd + 1));
     #  iu = [1, nc, nc + 1, nc * (nd + 1)];
     #  Jordi, could you help me translate this line?
     #  u(:, iu) = [r, srT, drdx, dsrTdx];
-    results = np.zeros((len(xdg), number_of_components * (number_of_dimensions + 1)))
+    results = np.zeros((len(x_dg), number_of_components * (number_of_dimensions + 1)))
 
     return results

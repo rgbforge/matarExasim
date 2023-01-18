@@ -175,7 +175,7 @@ def pdeparams(pde, mesh, parameters):
                                     rho0.value,  # 19
                                     t0.value,  # 20
                                     parameters["tau_a"],  # 21
-                                    # todo: Jordi, should we keep longitude and latitude in degrees.
+                                    # todo: Jordi, should we keep longitude and latitude in degrees?
                                     parameters["latitude"].value,  # 22
                                     parameters["longitude"].value,  # 23
                                     parameters["coord"],  # 24
@@ -224,12 +224,21 @@ def pdeparams(pde, mesh, parameters):
     #  xdg = reshape(mesh.dgnodes, [s2, ndg])';
     #  paramsMSIS = [R0, latitude, longitude, year, doy, sec, F10p7, F10p7a, hbot, H, T0, rho0, Fr, m];
     #  u0 = MSIS_initialCondition1D_pressure(xdg, paramsMSIS, indicesMSIS, mass);
-    #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
     s1, s2, s3 = np.shape(mesh["dgnodes"])
     altitude_mesh_grid = (mesh["dgnodes"].flatten("F") - R0) * H0 + parameters["altitude_lower"]
-    # TODO: CAN I JUST GET THE MESH POINTS USING MESH["P"]? IS "DGNODES" NECESSARY?
-    u0 = MSIS_initial_condition_1D_pressure(altitude_mesh_grid=altitude_mesh_grid.to(u.km),
+    # todo: Jordi, CAN I JUST GET THE MESH POINTS USING MESH["P"]? IS "DGNODES" NECESSARY?
+    u0 = MSIS_initial_condition_1D_pressure(x_dg=mesh["dgnodes"].flatten("F"),
+                                            altitude_mesh_grid=altitude_mesh_grid.to(u.km),
                                             parameters=parameters,
-                                            mass=mass)
-    altitude_mesh_grid.reshape((s1, s2, s3), order='F')
+                                            mass=mass,
+                                            T0=T0,
+                                            m=m,
+                                            rho0=rho0,
+                                            H0=H0,
+                                            Fr=Fr,
+                                            R0=R0)
+    # todo:
+    #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
+    #  Jordi, can you verify this is the correct operation ?
+    mesh["udg"] = u0.reshape((6, s1, s3), order='F')
     return pde, mesh
