@@ -48,6 +48,8 @@ def data_model_error(coefficients, altitude_low_boundary, altitude_mesh, data):
     """ A function to evaluate the model and data misfit (via the L2 norm).
     We later minimize this function to find the optimal coefficients.
 
+    # todo: Jordi, Helium is not a good fit for Jan 1st, 2013.
+
     :param coefficients: [a1, a2, a3, a4]
     :param altitude_low_boundary: altitude lower boundary (in meters).
     :param altitude_mesh: MSIS results altitude mesh (in meters).
