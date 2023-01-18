@@ -1,102 +1,156 @@
 """Module to initialize the pressure profile using MSIS.
-Latest update: Jan 17th, 2023 [OI]
+Latest update: Jan 18th, 2023 [OI]
 """
+import numpy as np
+from pymsis import msis
+import astropy.units as u
+from Applications.SpaceWeather.SW1D_sqrt.python.MSIS_reference_values import get_MSIS_species
 
 
-def MSIS_initial_condition_1D_pressure(x_dg, mu, mass, number_of_components=3,
+def MSIS_initial_condition_1D_pressure(xdg,
+                                       altitude_mesh_grid,
+                                       parameters,
+                                       mass,
+                                       T0,
+                                       m,
+                                       rho0,
+                                       H,
+                                       Fr,
+                                       R0,
+                                       number_of_components=3,
                                        number_of_dimensions=1):
     """
 
+    :param parameters:
     :param number_of_components: default is 3.
     :param number_of_dimensions: default is 1.
-    :param x_dg:
-    :param mu:
+    :param altitude_mesh_grid: altitude dg mesh grid [km]
     :param mass:
     :return:
     """
+    # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
+    f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
+
+    # run MSIS, output is a tensor of dimensions: (n_dates, n_longitude, n_latitude, n_altitude, 11)
+    # 11 stands for each species in the following order:
+    #  (1) Total mass density (kg / m3),  (2) N2 density (m-3), (3) O2 density (m-3), (4) O density (m-3),
+    #  (5) He density (m-3), (6) H density (m-3), (7) Ar density (m-3), (8) N density (m-3),
+    #  (9) Anomalous oxygen density (m-3), (10) NO density (m-3), (11) Temperature(K)
+    MSIS_output_center = msis.run(dates=parameters["date"],  # (list of dates) – Dates and times of interest
+                                  lons=parameters["longitude"].value,  # (list of floats) – Longitudes of interest
+                                  lats=parameters["latitude"].value,  # (list of floats) – Latitudes of interest
+                                  alts=altitude_mesh_grid.value,  # (list of floats) – Altitudes of interest
+                                  # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
+                                  f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                                  # F10.7 running 81-day average centered on the given date(s)
+                                  f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                                  # Daily Ap
+                                  aps=[ap_msis])
+
+    MSIS_output_minus = msis.run(dates=parameters["date"],  # (list of dates) – Dates and times of interest
+                                 lons=parameters["longitude"].value,  # (list of floats) – Longitudes of interest
+                                 lats=parameters["latitude"].value,  # (list of floats) – Latitudes of interest
+                                 alts=altitude_mesh_grid.value - parameters["initial_dr"].value,
+                                 # (list of floats) – Altitudes of interest
+                                 # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
+                                 f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                                 # F10.7 running 81-day average centered on the given date(s)
+                                 f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                                 # Daily Ap
+                                 aps=[ap_msis])
+
+    MSIS_output_plus = msis.run(dates=parameters["date"],  # (list of dates) – Dates and times of interest
+                                lons=parameters["longitude"].value,  # (list of floats) – Longitudes of interest
+                                lats=parameters["latitude"].value,  # (list of floats) – Latitudes of interest
+                                alts=altitude_mesh_grid.value + parameters["initial_dr"].value,
+                                # (list of floats) – Altitudes of interest
+                                # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
+                                f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                                # F10.7 running 81-day average centered on the given date(s)
+                                f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                                # Daily Ap
+                                aps=[ap_msis])
+
     # todo:
-    # parameters
-        # r0 = mu(1);
-        # lat0 = mu(2);
-        # long = wrapTo180(mu(3));
-        # year = mu(4);
-        # doy = mu(5);
-        # sec = mu(6);
-        # F10p7 = mu(7);
-        # F10p7a = mu(8);
-        #
-        # hbot = mu(9);
-        # H = mu(10);
-        # T0 = mu(11);
-        # rho0 = mu(12);
-        #
-        # Fr = mu(13);
-        # m = mu(14);
-        #
-        # % computation
-        # h = (xdg - r0) * H + hbot;
-        # npoints = length(h);
-        #
-        # lat = lat0 * ones(npoints, 1);
-        # long = long * ones(npoints, 1);
-        # year = year * ones(npoints, 1);
-        # doy = doy * ones(npoints, 1);
-        # sec = sec * ones(npoints, 1);
-        # F10p7 = F10p7 * ones(npoints, 1);
-        # F10p7a = F10p7a * ones(npoints, 1);
-        # LST = long / 15 + sec / 86400;
-        #
-        # aph = zeros(npoints, 7);
-        # aph(:, 1) = 4;
-        # flags = ones(23, 1);
-        # flags(9) = -1;
-        #
-        # dr = 500;
-        # [TAll, rhoAll] = atmosnrlmsise00(h, lat, long, year, doy, sec, LST, F10p7a, F10p7, aph, flags);
-        # [TAm, rhoAm] = atmosnrlmsise00(h - dr, lat, long, year, doy, sec, LST, F10p7a, F10p7, aph, flags);
-        # [TAp, rhoAp] = atmosnrlmsise00(h + dr, lat, long, year, doy, sec, LST, F10p7a, F10p7, aph, flags);
-        #
-        # rho = rhoAll(:, indices)*mass * m / rho0;
-        # rhom = rhoAm(:, indices)*mass * m / rho0;
-        # rhop = rhoAp(:, indices)*mass * m / rho0;
-        #
-        # mass0 = (rhoAll(:, indices). * mass
-        # ')./(rhoAll(:,indices)*mass)*mass;
-        # massm = (rhoAm(:, indices). * mass
-        # ')./(rhoAm(:,indices)*mass)*mass;
-        # massp = (rhoAp(:, indices). * mass
-        # ')./(rhoAp(:,indices)*mass)*mass; \ \
-        #
-        # % rho = rho / rho(1);
-        # % rhop = rhop / rho(1);
-        # % rhom = rhom / rho(1);
-        #
-        # T = TAll(:, 2) / T0;
-        # Tm = TAm(:, 2) / T0;
-        # Tp = TAp(:, 2) / T0;
-        #
-        # rT = rho. * T. / mass0;
-        # rTm = rhom. * Tm. / massm;
-        # rTp = rhop. * Tp. / massp;
-        #
-        # drT = rTp - rTm;
-        # drTdr = H * drT / (2 * dr);
-        #
-        # % acc = (Fr ^ 2 * xdg - (r0. / xdg). ^ 2);
-        # acc = (Fr ^ 2 * xdg * cos(lat0) ^ 2 - (r0. / xdg). ^ 2);
-        #
-        # rho = drTdr. / acc;
-        # % rho = rho / rho(1);
-        #
-        # T = mass0. * rT. / rho;
-        # T = T - T(1) + 1;
-        # rho = rho / rho(1);
-        # r = log(rho);
-        # srT = sqrt(rho). * T;
-        #
-        # drdx = gradient(r). / gradient(xdg);
-        # dsrTdx = gradient(srT). / gradient(xdg);
-        #
-        # u = zeros(npoints, nc * (nd + 1));
-        # iu = [1, nc, nc + 1, nc * (nd + 1)];
-        # u(:, iu) = [r, srT, drdx, dsrTdx];
+    #  [TAll, rhoAll] = atmosnrlmsise00(h, lat, long, year, doy, sec, LST, F10p7a, F10p7, aph, flags);
+    #  [TAm, rhoAm] = atmosnrlmsise00(h - dr, lat, long, year, doy, sec, LST, F10p7a, F10p7, aph, flags);
+    #  [TAp, rhoAp] = atmosnrlmsise00(h + dr, lat, long, year, doy, sec, LST, F10p7a, F10p7, aph, flags);
+    MSIS_center = get_MSIS_species(MSIS_output=MSIS_output_center, parameters=parameters)
+    MSIS_minus = get_MSIS_species(MSIS_output=MSIS_output_minus, parameters=parameters)
+    MSIS_plus = get_MSIS_species(MSIS_output=MSIS_output_plus, parameters=parameters)
+
+    # todo:
+    #  rho = rhoAll(:, indices)*mass * m / rho0;
+    #  rhom = rhoAm(:, indices)*mass * m / rho0;
+    #  rhop = rhoAp(:, indices)*mass * m / rho0;
+
+    # todo: Jordi, what are the dimensions of these values?
+    rho_center = MSIS_center * mass * m / rho0
+    rho_minus = MSIS_minus * mass * m / rho0
+    rho_plus = MSIS_plus * mass * m / rho0
+
+    # todo:
+    #  mass0 = (rhoAll(:, indices). * mass')./(rhoAll(:,indices)*mass)*mass;
+    #  massm = (rhoAm(:, indices). * mass')./(rhoAm(:,indices)*mass)*mass;
+    #  massp = (rhoAp(:, indices). * mass')./(rhoAp(:,indices)*mass)*mass;
+    mass_center = MSIS_center * mass / MSIS_center * mass * mass
+    mass_minus = MSIS_minus * mass / MSIS_minus * mass * mass
+    mass_plus = MSIS_plus * mass / MSIS_plus * mass * mass
+
+    # todo:
+    #  T = TAll(:, 2) / T0;
+    #  Tm = TAm(:, 2) / T0;
+    #  Tp = TAp(:, 2) / T0;
+    T_center = MSIS_output_center[0, 0, 0, :, -1] / T0
+    T_minus = MSIS_output_minus[0, 0, 0, :, -1] / T0
+    T_plus = MSIS_output_plus[0, 0, 0, :, -1] / T0
+
+
+    # todo:
+    #  rT = rho. * T. / mass0;
+    #  rTm = rhom. * Tm. / massm;
+    #  rTp = rhop. * Tp. / massp;
+    rho_temperature_center = rho_center * T_center / mass_center
+    rho_temperature_minus = rho_minus * T_minus / mass_minus
+    rho_temperature_plus = rho_plus * T_plus / mass_plus
+
+    # todo:
+    #  drT = rTp - rTm;
+    #  drTdr = H * drT / (2 * dr);
+    central_rho_temperature = H * (rho_temperature_plus - rho_temperature_minus) / (2 * parameters["initial_dr"])
+
+
+
+    # todo:
+    #  acc = (Fr ^ 2 * xdg * cos(lat0) ^ 2 - (r0. / xdg). ^ 2);
+    #  rho = drTdr. / acc;
+    acc = (Fr ** 2) * xdg * (np.cos(parameters["latitude"].to(u.rad).value) ** 2) - (R0 / xdg) ** 2
+    rho = central_rho_temperature / acc
+
+
+    # todo:
+    #  T = mass0. * rT. / rho;
+    #  T = T - T(1) + 1;
+    #  rho = rho / rho(1);
+    #  r = log(rho);
+    #  srT = sqrt(rho). * T;
+    temperature = mass_center * rho_temperature_center / rho_center
+    temperature = temperature - temperature[0] + 1
+    rho = rho / rho[0]
+    log_rho = np.log(rho)
+    sqrt_rho_temperature = np.sqrt(rho) * temperature
+
+    # todo:
+    #  drdx = gradient(r). / gradient(xdg);
+    #  dsrTdx = gradient(srT). / gradient(xdg);
+    central_log_rho = np.gradient(log_rho, xdg)
+    central_sqrt_rho_temperature = np.gradient(sqrt_rho_temperature, xdg)
+
+    # todo:
+    #  u = zeros(npoints, nc * (nd + 1));
+    #  iu = [1, nc, nc + 1, nc * (nd + 1)];
+    #  Jordi, could you help me translate this line?
+    #  u(:, iu) = [r, srT, drdx, dsrTdx];
+    results = np.zeros((len(xdg), number_of_components * (number_of_dimensions + 1)))
+
+    return results

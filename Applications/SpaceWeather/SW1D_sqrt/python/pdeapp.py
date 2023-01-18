@@ -41,8 +41,8 @@ parameters = {
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0*u.s,  # restart at given time step (second)
-    "longitude": 0*u.deg,  # longitude coordinates # todo: try San Diego coords (long=32.7, lat=-117.16)
-    "latitude": 0*u.deg,  # latitude coordinates
+    "longitude": 32.7*u.deg,  # longitude coordinates # todo: try San Diego coords (long=32.7, lat=-117.16)
+    "latitude": -117.16*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
@@ -80,7 +80,8 @@ parameters = {
     "alpha_eddy": 35,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
     "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation
-    "n_latitude_MSIS": 35  # number of mesh points in the longitude direction for MSIS simulation
+    "n_latitude_MSIS": 35,  # number of mesh points in the longitude direction for MSIS simulation
+    "initial_dr": 0.5 * u.km  # mesh offset used to measure derivatives in initial condition 1D pressure.
 }
 
 # run executable file to compute solution and store it in dataout folder
