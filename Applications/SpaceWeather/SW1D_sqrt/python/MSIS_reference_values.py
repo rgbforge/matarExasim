@@ -5,7 +5,9 @@ from pymsis import msis
 import numpy as np
 import astropy.units as u
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 import scipy.optimize as opt
+from functools import partial
 
 
 def get_MSIS_species(MSIS_output, parameters):
@@ -44,23 +46,18 @@ def get_MSIS_species(MSIS_output, parameters):
     return MSIS
 
 
-def data_model_error(coefficients, altitude_low_boundary, altitude_mesh, data):
-    """ A function to evaluate the model and data misfit (via the L2 norm).
+def exp_model(altitude_mesh, a1, a2, a3, a4, altitude_low_boundary):
+    """ A function to evaluate the model (exponential form).
     We later minimize this function to find the optimal coefficients.
 
-    :param coefficients: [a1, a2, a3, a4]
-    :param altitude_low_boundary: altitude lower boundary (in km).
+    :param a1, a2, a3, a4 coefficients
+    :param altitude_low_boundary: altitude lower boundary (in km)
     :param altitude_mesh: MSIS results altitude mesh (in km).
-    :param data: mass fraction of a certain specie (dimensionless quantity).
     :return: error in L2-norm.
     """
-    # # the parameters are stored as a vector of values, so unpack the vector
-    a1, a2, a3, a4 = coefficients
     # model evaluation using the input coefficients.
-    model_eval = a1 * np.exp(a2 * (altitude_mesh - altitude_low_boundary)) + \
-                 a3 * np.exp(a4 * (altitude_mesh - altitude_low_boundary))
-    # return the model misfit in the 2-norm
-    return np.linalg.norm(model_eval - data)
+    return a1 * np.exp(a2 * (altitude_mesh - altitude_low_boundary)) + \
+           a3 * np.exp(a4 * (altitude_mesh - altitude_low_boundary))
 
 
 def coefficient_fit(altitude_lower, altitude_mesh, data):
@@ -72,19 +69,28 @@ def coefficient_fit(altitude_lower, altitude_mesh, data):
             H0 - lower altitude boundary (in m)
             data - mass fraction of a particular species (dimensionless quantity)
 
+    Use non-linear least squares to fit a model to data.
+
     :param altitude_mesh: MSIS results altitude mesh (in km).
     :param altitude_lower: altitude lower boundary (in km).
     :param data: mass fraction of a particular species (dimensionless quantity).
     :return: optimal coefficients [a1, a2, a3, a4] (in the L2-sense)
     """
-    # minimize the loss function using a conjugate gradient algorithm.
-    minimization_results = opt.minimize(fun=lambda *args: data_model_error(*args),
-                                        x0=np.array([0, 0, 0, 0]),
-                                        method="CG",
-                                        args=(altitude_lower.to(u.km).value,
-                                              altitude_mesh.to(u.km).value,
-                                              data))
-    return minimization_results["x"]
+    # # minimize the loss function using a conjugate gradient algorithm.
+    # minimization_results = opt.minimize(fun=lambda *args: np.linalg.norm(data_model_error(*args),
+    #                                     x0=np.array([0, 0, 0, 0]),
+    #                                     method="CG",
+    #                                     args=(altitude_lower.to(u.km).value,
+    #                                           altitude_mesh.to(u.km).value,
+    #                                           data))
+    minimization_results = curve_fit(
+        f=partial(exp_model, altitude_low_boundary=altitude_lower.to(u.m).value),
+        xdata=altitude_mesh.to(u.m).value,
+        ydata=data,
+        full_output=True,
+        p0=(0, 0, 0, 0),
+        maxfev=int(1e7))
+    return minimization_results[0]
 
 
 def MSIS_reference_values(parameters, mass):
@@ -157,7 +163,7 @@ def MSIS_reference_values(parameters, mass):
     c_chi = np.zeros((len(parameters["chemical_species"]) - 1, 4))
     # skip oxygen since it does not fit well to the exponential sum model.
     for ii in range(len(parameters["chemical_species"]) - 1):
-        c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"],  # in km
+        c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"].to(u.km),  # in km
                                        data=chi[:, ii + 1],  # skip oxygen
                                        altitude_mesh=altitude_mesh * u.km)
     return density_mean_total[0], T0, chi, c_chi
