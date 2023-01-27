@@ -1,12 +1,11 @@
 """ Module to call MSIS from Python.
-Latest update: Jan 17th, 2023 [OI]
+Latest update: Jan 27th, 2023 [OI]
 """
 from pymsis import msis
 import numpy as np
 import astropy.units as u
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import scipy.optimize as opt
 from functools import partial
 
 
@@ -18,10 +17,13 @@ def get_MSIS_species(MSIS_output, parameters):
     :return: MSIS tensor results dimensions: (n_species, n_longitude, n_latitude, n_altitude)
     """
     # initialize the dataset we need.
+    n_date, n_longitude, n_latitude, n_altitude, n_species = np.shape(MSIS_output)
+
+    # initialize the returned tensor.
     MSIS = np.zeros((len(parameters["chemical_species"]),
-                     parameters["n_longitude_MSIS"],
-                     parameters["n_latitude_MSIS"],
-                     parameters["n_radial_MSIS"])) * 1 / u.m ** 3
+                     n_longitude,
+                     n_latitude,
+                     n_altitude)) * 1 / u.m ** 3
 
     # loop over chemical species
     for ii in range(len(parameters["chemical_species"])):
@@ -71,18 +73,12 @@ def coefficient_fit(altitude_lower, altitude_mesh, data):
 
     Use non-linear least squares to fit a model to data.
 
-    :param altitude_mesh: MSIS results altitude mesh (in km).
-    :param altitude_lower: altitude lower boundary (in km).
+    :param altitude_mesh: MSIS results altitude mesh (later converted to meters).
+    :param altitude_lower: altitude lower boundary (later converted to meters).
     :param data: mass fraction of a particular species (dimensionless quantity).
-    :return: optimal coefficients [a1, a2, a3, a4] (in the L2-sense)
+    :return: optimal coefficients [a1, a2, a3, a4] that minimize the sum of squares of the error between the
+             nonlinear model and the MSIS data.
     """
-    # # minimize the loss function using a conjugate gradient algorithm.
-    # minimization_results = opt.minimize(fun=lambda *args: np.linalg.norm(data_model_error(*args),
-    #                                     x0=np.array([0, 0, 0, 0]),
-    #                                     method="CG",
-    #                                     args=(altitude_lower.to(u.km).value,
-    #                                           altitude_mesh.to(u.km).value,
-    #                                           data))
     minimization_results = curve_fit(
         f=partial(exp_model, altitude_low_boundary=altitude_lower.to(u.m).value),
         xdata=altitude_mesh.to(u.m).value,
@@ -161,9 +157,9 @@ def MSIS_reference_values(parameters, mass):
 
     # optimal coefficients to fit to exponential function, in MATLAB this variable is called "cchi".
     c_chi = np.zeros((len(parameters["chemical_species"]) - 1, 4))
-    # skip oxygen since it does not fit well to the exponential sum model.
+    # skip oxygen since it does not fit well to the exponential sum model (measured in meters).
     for ii in range(len(parameters["chemical_species"]) - 1):
         c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"].to(u.km),  # in km
                                        data=chi[:, ii + 1],  # skip oxygen
-                                       altitude_mesh=altitude_mesh * u.km)
+                                       altitude_mesh=altitude_mesh * u.km)  # in km
     return density_mean_total[0], T0, chi, c_chi

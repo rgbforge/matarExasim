@@ -210,6 +210,12 @@ def pdeparams(pde, mesh, parameters):
     mesh['boundaryexpr'] = [lambda p: (p[0, :] < R0 + parameters["boundary_epsilon"]),
                             lambda p: (p[0, :] > R1 - parameters["boundary_epsilon"])]
     mesh['boundarycondition'] = np.array([1, 2])  # Set boundary condition for each boundary
+    # get the mesh nodes.
+    # mesh dgnodes has dimensions:
+    # [n_points_per_element x n_dimensions x n_elements]
+    # (1) n_points_per_element: the number of nodal points (in 1D: p+1),
+    # (2) n_dimensions: 1 because we are in 1D
+    # (3) n_elements is the ones that you have set.
     mesh["dgnodes"] = Preprocessing.createdgnodes(mesh["p"],
                                                   mesh["t"],
                                                   mesh["f"],
@@ -224,11 +230,13 @@ def pdeparams(pde, mesh, parameters):
     #  xdg = reshape(mesh.dgnodes, [s2, ndg])';
     #  paramsMSIS = [R0, latitude, longitude, year, doy, sec, F10p7, F10p7a, hbot, H, T0, rho0, Fr, m];
     #  u0 = MSIS_initialCondition1D_pressure(xdg, paramsMSIS, indicesMSIS, mass);
-    s1, s2, s3 = np.shape(mesh["dgnodes"])
-    altitude_mesh_grid = (mesh["dgnodes"].flatten("F") - R0) * H0 + parameters["altitude_lower"]
-    # todo: Jordi, CAN I JUST GET THE MESH POINTS USING MESH["P"]? IS "DGNODES" NECESSARY?
+    n_points_per_element, n_dimensions, n_elements = np.shape(mesh["dgnodes"])
+    # get grid points in km
+    # todo: note: we have some repeating locations. Is this ok?
+    altitude_mesh_grid = ((mesh["dgnodes"].flatten("F") - R0) * H0 + parameters["altitude_lower"]).to(u.km)
+    # todo: Jordi can you double check that x_dg is a 1d array?
     u0 = MSIS_initial_condition_1D_pressure(x_dg=mesh["dgnodes"].flatten("F"),
-                                            altitude_mesh_grid=altitude_mesh_grid.to(u.km),
+                                            altitude_mesh_grid=altitude_mesh_grid,
                                             parameters=parameters,
                                             mass=mass,
                                             T0=T0,
@@ -236,9 +244,13 @@ def pdeparams(pde, mesh, parameters):
                                             rho0=rho0,
                                             H0=H0,
                                             Fr=Fr,
-                                            R0=R0)
+                                            R0=R0,
+                                            number_of_dimensions=n_dimensions,
+                                            number_of_components=n_points_per_element)
     # todo:
     #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
     #  Jordi, can you verify this is the correct operation ?
-    mesh["udg"] = u0.reshape((6, s1, s3), order='F')
+    #  can we avoid the transposing and directly provide the right ordering from u0?
+    mesh["udg"] = u0.reshape((6, n_points_per_element, n_elements), order='F')
+
     return pde, mesh
