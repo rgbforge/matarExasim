@@ -76,7 +76,7 @@ parameters = {
     "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
     "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
-    "nu_eddy": 100,  # eddy viscosity
+    "mu_eddy": 100,  # eddy viscosity
     "alpha_eddy": 35,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
     "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation

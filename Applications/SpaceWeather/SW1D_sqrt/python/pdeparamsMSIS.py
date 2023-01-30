@@ -166,7 +166,7 @@ def pdeparams(pde, mesh, parameters):
                                     day_of_year,  # 10
                                     parameters["exp_mu"],  # 11
                                     parameters["exp_kappa"],  # 12
-                                    parameters["nu_eddy"],  # 13
+                                    parameters["mu_eddy"],  # 13
                                     parameters["alpha_eddy"],  # 14
                                     R0.value,  # 15
                                     R1.value,  # 16
