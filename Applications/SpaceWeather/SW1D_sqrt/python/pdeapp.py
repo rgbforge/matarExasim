@@ -41,8 +41,8 @@ parameters = {
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0*u.s,  # restart at given time step (second)
-    "longitude": 32.7*u.deg,  # longitude coordinates # todo: try San Diego coords (long=32.7, lat=-117.16)
-    "latitude": -117.16*u.deg,  # latitude coordinates
+    "longitude": -117.1611*u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
+    "latitude": 32.7157*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)

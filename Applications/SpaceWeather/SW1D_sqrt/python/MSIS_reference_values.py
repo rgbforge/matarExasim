@@ -129,9 +129,9 @@ def MSIS_reference_values(parameters, mass):
                            lats=latitude_mesh,  # (list of floats) – Latitudes of interest
                            alts=altitude_mesh,  # (list of floats) – Altitudes of interest
                            # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
-                           f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                           f107s=f10p7_msis,
                            # F10.7 running 81-day average centered on the given date(s)
-                           f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                           f107as=f10p7a_msis,
                            # Daily Ap
                            aps=[ap_msis])
 

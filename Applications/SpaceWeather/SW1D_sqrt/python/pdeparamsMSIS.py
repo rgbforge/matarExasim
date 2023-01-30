@@ -161,8 +161,10 @@ def pdeparams(pde, mesh, parameters):
                                     parameters["euv_efficiency"],  # 6
                                     declination_sun0,  # 7
                                     # todo: Jordi, does the F10.7 units matter?
-                                    F10p7.value + parameters["F10p7_uncertainty"].value,  # 8
-                                    F10p7_81.value + parameters["F10p7-81_uncertainty"].value,  # 9
+                                    #  Jan 30th meeting: the units are sfu [600-200]
+                                    #  will double check later as well.
+                                    (F10p7.value + parameters["F10p7_uncertainty"].value) * 1E22,  # 8
+                                    (F10p7_81.value + parameters["F10p7-81_uncertainty"].value) * 1E22,  # 9
                                     day_of_year,  # 10
                                     parameters["exp_mu"],  # 11
                                     parameters["exp_kappa"],  # 12
@@ -175,10 +177,9 @@ def pdeparams(pde, mesh, parameters):
                                     rho0.value,  # 19
                                     t0.value,  # 20
                                     parameters["tau_a"],  # 21
-                                    # todo: Jordi, should we keep longitude and latitude in degrees?
                                     parameters["latitude"].value,  # 22
                                     parameters["longitude"].value,  # 23
-                                    parameters["coord"],  # 24
+                                    parameters["coord"],  # 24 # todo: we might not need this anymore.
                                     parameters["date"][:4]  # 25 # todo: Jordi, why do we need this?
                                     ])
 
@@ -186,8 +187,8 @@ def pdeparams(pde, mesh, parameters):
     pde['externalparam'] = np.hstack([lambda_EUV.value,  # 0
                                       AFAC,  # 1
                                       F74113.value,  # 2
-                                      crossSections.flatten(),  # 3
-                                      c_chi.flatten(),  # 4 todo: make sure flattening is done properly.
+                                      crossSections.flatten(order="C"),  # 3
+                                      c_chi.flatten(order="C"),  # 4
                                       mass,  # 5
                                       c_kappa_i  # 6
                                       ])
@@ -199,10 +200,11 @@ def pdeparams(pde, mesh, parameters):
     pde['linearsolvertol'] = parameters["linear_solver_tol"]  # GMRES tolerance
     pde['linearsolveriter'] = parameters["linear_solver_iter"]  # number of GMRES iterations
     pde['precMatrixType'] = parameters["pre_cond_matrix_type"]  # preconditioning type
-    pde['NLtol'] = 1e-10  # Newton toleranccd dataoue
+    pde['NLtol'] = 1e-10  # Newton tolerance
     pde['NLiter'] = 2  # Newton iterations
-    pde['matvectol'] = 1e-7  # todo: define
-    pde['RBdim'] = 8  # todo: define
+    pde['matvectol'] = 1E-6  # finite difference approach for Jacobian approximation
+    pde['RBdim'] = 8  # number of dimensions of reduced basis used to compute the conditioner and
+                      # initialization used for each time step.
 
     # set computational mesh
     mesh['p'], mesh['t'] = mesh1D_adapted(r1=R0, r2=R1, nx=parameters["resolution"])
@@ -232,9 +234,9 @@ def pdeparams(pde, mesh, parameters):
     #  u0 = MSIS_initialCondition1D_pressure(xdg, paramsMSIS, indicesMSIS, mass);
     n_points_per_element, n_dimensions, n_elements = np.shape(mesh["dgnodes"])
     # get grid points in km
-    # todo: note: we have some repeating locations. Is this ok?
     altitude_mesh_grid = ((mesh["dgnodes"].flatten("F") - R0) * H0 + parameters["altitude_lower"]).to(u.km)
     # todo: Jordi can you double check that x_dg is a 1d array?
+    #
     u0 = MSIS_initial_condition_1D_pressure(x_dg=mesh["dgnodes"].flatten("F"),
                                             altitude_mesh_grid=altitude_mesh_grid,
                                             parameters=parameters,
@@ -249,8 +251,9 @@ def pdeparams(pde, mesh, parameters):
                                             number_of_components=n_points_per_element)
     # todo:
     #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
-    #  Jordi, can you verify this is the correct operation ?
+    #  Jordi, can you verify this is the correct operation?
     #  can we avoid the transposing and directly provide the right ordering from u0?
-    mesh["udg"] = u0.reshape((6, n_points_per_element, n_elements), order='F')
-
+    #   48 x 6 ---> transpose ---> 6 x 3 x 16 -----> transpose -----> 3 x 6 x 16 result.
+    #   need to test this.
+    mesh["udg"] = u0.reshape((n_points_per_element, 6, n_elements), order='F')
     return pde, mesh

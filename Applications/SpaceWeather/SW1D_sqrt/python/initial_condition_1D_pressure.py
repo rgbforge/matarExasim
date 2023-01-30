@@ -1,5 +1,5 @@
 """Module to initialize the pressure profile using MSIS.
-Latest update: Jan 27th, 2023 [OI]
+Latest update: Jan 30th, 2023 [OI]
 """
 import numpy as np
 from pymsis import msis
@@ -33,8 +33,8 @@ def MSIS_initial_condition_1D_pressure(x_dg,
             mass of atomic oxygen. (units: kg)
     :param T0: (float)
             reference temperature at the lower altitude boundary (e.g. @ 100km). (units: Kelvin).
-    :param x_dg: (ndarray)
-                DG mesh nodes. # todo: Jordi, is this a flattened array or a matrix?
+    :param x_dg: (1d ndarray)
+                DG mesh nodes.
     :param parameters: (dictionary)
                     list of input parameters defined in pdeapp.py.
     :param number_of_components: (float)
@@ -56,12 +56,6 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
 
-    # define longitude uniform mesh.
-    longitude_mesh = np.linspace(-180, 175, parameters["n_longitude_MSIS"])
-    # define latitude uniform mesh.
-    latitude_mesh = np.linspace(-85, 85, parameters["n_latitude_MSIS"])
-    # todo: should we use the exact longitude and latitude or a mean of the whole globe?
-
     # run MSIS, output is a tensor of dimensions: (n_dates, n_longitude, n_latitude, n_altitude, 11)
     # 11 stands for each species in the following order:
     #  (1) Total mass density (kg / m3),  (2) N2 density (m-3), (3) O2 density (m-3), (4) O density (m-3),
@@ -72,9 +66,9 @@ def MSIS_initial_condition_1D_pressure(x_dg,
                                   lats=parameters["latitude"].value,  # (list of floats) – Latitudes of interest
                                   alts=altitude_mesh_grid.value,  # (list of floats) – Altitudes of interest
                                   # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
-                                  f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                                  f107s=f10p7_msis,
                                   # F10.7 running 81-day average centered on the given date(s)
-                                  f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                                  f107as=f10p7a_msis,
                                   # Daily Ap
                                   aps=[ap_msis])
 
@@ -84,9 +78,9 @@ def MSIS_initial_condition_1D_pressure(x_dg,
                                  alts=altitude_mesh_grid.value - parameters["initial_dr"].value,
                                  # (list of floats) – Altitudes of interest
                                  # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
-                                 f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                                 f107s=f10p7_msis,
                                  # F10.7 running 81-day average centered on the given date(s)
-                                 f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                                 f107as=f10p7a_msis,
                                  # Daily Ap
                                  aps=[ap_msis])
 
@@ -96,9 +90,9 @@ def MSIS_initial_condition_1D_pressure(x_dg,
                                 alts=altitude_mesh_grid.value + parameters["initial_dr"].value,
                                 # (list of floats) – Altitudes of interest
                                 # list of floats, optional) – Daily F10.7 of the previous day for the given date(s)
-                                f107s=f10p7_msis + (parameters["F10p7_uncertainty"] * 1E22).value,
+                                f107s=f10p7_msis,
                                 # F10.7 running 81-day average centered on the given date(s)
-                                f107as=f10p7a_msis + (parameters["F10p7-81_uncertainty"] * 1E22).value,
+                                f107as=f10p7a_msis,
                                 # Daily Ap
                                 aps=[ap_msis])
 
@@ -116,24 +110,19 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     #  rhop = rhoAp(:, indices)*mass * m / rho0;
 
     # todo: Jordi, what are the dimensions of these values?
-    # current dimensions:  [48, 4]
-    rho_center = MSIS_center.T * mass * m / rho0
-    rho_minus = MSIS_minus.T * mass * m / rho0
-    rho_plus = MSIS_plus.T * mass * m / rho0
+    rho_center = MSIS_center.T @ mass * m / rho0
+    rho_minus = MSIS_minus.T @ mass * m / rho0
+    rho_plus = MSIS_plus.T @ mass * m / rho0
 
     # todo:
-    #  mass0 = (rhoAll(:, indices). * mass')./(rhoAll(:,indices)*mass)*mass;
-    #  massm = (rhoAm(:, indices). * mass')./(rhoAm(:,indices)*mass)*mass;
-    #  massp = (rhoAp(:, indices). * mass')./(rhoAp(:,indices)*mass)*mass;
     #  Jordi, can we go over the dimensions here as well?
-    mass_center = MSIS_center * mass / MSIS_center * mass * mass
-    mass_minus = MSIS_minus * mass / MSIS_minus * mass * mass
-    mass_plus = MSIS_plus * mass / MSIS_plus * mass * mass
+    #  mass0 = (rhoAll(:, indices) * mass)./ sum(rhoAll(:, indices), 2);
+    #  massm = (rhoAm(:, indices) * mass)./ sum(rhoAm(:, indices), 2);
+    #  massp = (rhoAp(:, indices) * mass)./ sum(rhoAp(:, indices), 2);
+    mass_center = MSIS_center.value.T @ mass.value / np.sum(MSIS_center.value, axis=0)
+    mass_minus = MSIS_minus.value.T @ mass.value / np.sum(MSIS_minus.value, axis=0)
+    mass_plus = MSIS_plus.value.T @ mass.value / np.sum(MSIS_plus.value, axis=0)
 
-    # todo:
-    #  T = TAll(:, 2) / T0;
-    #  Tm = TAm(:, 2) / T0;
-    #  Tp = TAp(:, 2) / T0;
     T_center = MSIS_output_center[0, 0, 0, :, -1] / T0
     T_minus = MSIS_output_minus[0, 0, 0, :, -1] / T0
     T_plus = MSIS_output_plus[0, 0, 0, :, -1] / T0
@@ -142,9 +131,10 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     #  rT = rho. * T. / mass0;
     #  rTm = rhom. * Tm. / massm;
     #  rTp = rhop. * Tp. / massp;
-    rho_temperature_center = rho_center * T_center / mass_center
-    rho_temperature_minus = rho_minus * T_minus / mass_minus
-    rho_temperature_plus = rho_plus * T_plus / mass_plus
+    # vector operation --> return same size.
+    rho_temperature_center = (rho_center * T_center) / mass_center
+    rho_temperature_minus = (rho_minus * T_minus) / mass_minus
+    rho_temperature_plus = (rho_plus * T_plus) / mass_plus
 
     # todo:
     #  drT = rTp - rTm;
@@ -164,7 +154,7 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     #  r = log(rho);
     #  srT = sqrt(rho). * T;
     temperature = mass_center * rho_temperature_center / rho_center
-    temperature = temperature - temperature[0] + 1
+    temperature = temperature.value - temperature[0].value + 1
     rho = rho / rho[0]
     log_rho = np.log(rho)
     sqrt_rho_temperature = np.sqrt(rho) * temperature
@@ -172,8 +162,8 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     # todo:
     #  drdx = gradient(r). / gradient(xdg);
     #  dsrTdx = gradient(srT). / gradient(xdg);
-    central_log_rho = np.gradient(log_rho, x_dg)
-    central_sqrt_rho_temperature = np.gradient(sqrt_rho_temperature, x_dg)
+    central_log_rho = np.gradient(f=log_rho, edge_order=2) / np.gradient(f=x_dg, edge_order=2)
+    central_sqrt_rho_temperature = np.gradient(f=sqrt_rho_temperature, edge_order=2) / np.gradient(f=x_dg, edge_order=2)
 
     # todo:
     #  u = zeros(npoints, nc * (nd + 1));
@@ -186,8 +176,8 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     index_results = np.array([1, number_of_components, number_of_components + 1,
                               number_of_components * (number_of_dimensions + 1)]) - 1
 
-    results[:, index_results] = np.array([log_rho,  # log(rho)
-                                          sqrt_rho_temperature,  # sqrt(rho) * T
-                                          central_log_rho,   # dr/dx
-                                          central_sqrt_rho_temperature])   # d(sqrt(rho) * T)/dx
+    results[:, index_results] = np.array([log_rho.value,  # log(rho)
+                                          sqrt_rho_temperature.value,  # sqrt(rho) * T
+                                          central_log_rho.value,   # dr/dx
+                                          central_sqrt_rho_temperature.value]).T   # d(sqrt(rho) * T)/dx
     return results
