@@ -366,8 +366,6 @@ def EUVsource1D(u, x, t, mu, eta):
         Chi[iSpecies-1] = coeffsDensity[0]*exp(coeffsDensity[1]*(r-R0)*H0) + coeffsDensity[2]*exp(coeffsDensity[3]*(r-R0)*H0)
         Chi[0] = Chi[0] - Chi[iSpecies-1]
 
-        print(Chi)
-
 
     mass = eta[(3+nspecies)*nWaves+4*(nspecies-1):(3+nspecies)*nWaves+4*(nspecies-1)+nspecies]
     #Alert: new change for consistency with total mass (not pushed yet in the Matlab version)
