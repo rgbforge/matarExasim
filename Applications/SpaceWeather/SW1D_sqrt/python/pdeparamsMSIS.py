@@ -161,7 +161,7 @@ def pdeparams(pde, mesh, parameters):
                                     parameters["euv_efficiency"],  # 6
                                     declination_sun0,  # 7
                                     # todo: Jordi, does the F10.7 units matter?
-                                    #  Jan 30th meeting: the units are sfu [600-200]
+                                    #  Jan 30th meeting: the units are sfu [60-200]
                                     #  will double check later as well.
                                     (F10p7.value + parameters["F10p7_uncertainty"].value) * 1E22,  # 8
                                     (F10p7_81.value + parameters["F10p7-81_uncertainty"].value) * 1E22,  # 9

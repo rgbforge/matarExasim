@@ -26,7 +26,7 @@ pde, mesh = Preprocessing.initializeexasim()
 
 # Define a PDE model: governing equations and boundary conditions
 pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
-pde['modelfile'] = "pdemodel"  # name of a file defining the PDE model
+pde['modelfile'] = "pdemodelMSIS"  # name of a file defining the PDE model
 
 # Choose computing platform and set number of processors
 pde['platform'] = "cpu"
@@ -38,7 +38,7 @@ parameters = {
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_step": 5 * u.s,  # time step (seconds)
-    "t_simulation": 2 * u.d,  # length of simulation (days)
+    "t_simulation": 0.002 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0*u.s,  # restart at given time step (second)
     "longitude": -117.1611*u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)

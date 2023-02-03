@@ -2,8 +2,7 @@
 Latest update: Oct 13th, 2022. [OI]
 """
 from numpy import *
-from sympy import exp, sqrt, log, pi, tanh, sin, cos, asin
-
+from sympy import exp, sqrt, log, pi, tanh, sin, cos, asin, zeros
 
 def mass(u, q, w, v, x, t, mu, eta):
     m = array([1.0, 1.0, 1.0])
@@ -16,15 +15,6 @@ def flux(u, q, w, v, x, t, mu, eta):
 
     f = fi + fv
     return f
-
-
-def fluxWall(u, q, w, v, x, t, mu, eta):
-    fi = fluxInviscidWall(u, x, mu, eta)
-    fv = fluxViscousWall(u, q, x, mu, eta)
-
-    f = fi + fv
-    return f
-
 
 def source(u, q, w, v, x, t, mu, eta):
     x1 = x[0]
@@ -48,7 +38,7 @@ def source(u, q, w, v, x, t, mu, eta):
 
     vx = srvx * sr1
     T = srT * sr1
-    p = srT / gam
+    p = srT / (gam*mw)
 
     drdx = -q[0]
     drvxdx = -q[1]
@@ -65,7 +55,7 @@ def source(u, q, w, v, x, t, mu, eta):
 
     mustar = T**expmu
     k0 = thermalConductivity(x,mu,eta)
-    kstar = k0*T **expKappa
+    kstar = k0*T**expKappa
 
     nu = (mustar * sr1 + sr*nuEddy)/sqrt(gam * Gr)
     fc = (kstar * sr1 + sr*alphaEddy)*mw*sqrt(gam / Gr) / Pr
@@ -79,15 +69,17 @@ def source(u, q, w, v, x, t, mu, eta):
     Fr = mu[3]
     ar = -gravity + x1 * Fr ** 2 / gam
 
-    trp = 2 * c23 * nu * (dvxdx ** 2 - 2 * vx * dvxdx / x1 + vx ** 2 / (x1 ** 2))
+    trp = 2 * c23 * nu * mw * (dvxdx ** 2 - 2 * vx * dvxdx / x1 + vx ** 2 / (x1 ** 2))
     SigmadV = gam * gam1 * trp
 
     q_EUV = EUVsource1D(u, x, t, mu, eta)
 
+    qcv = (srT*vx - fc*dTdx)*dmdr/mw
+
     s = array([r_1 * dvxdx - 2 * vx / x1,
                sr * ar + 0.5 * (dvxdx - 2 * vx / x1) * srvx - 0.5 * p * drdx + 0.5 * trr * drdx + 0.5 * trd,
                sr * q_EUV + (3 / 2 - gam) * srT * dvxdx + 2 * (1 / 2 - gam) * srT * vx / x1 + fc * dTdx * (
-                       2 / x1 + 0.5 * drdx) + SigmadV])
+                       2 / x1 + 0.5 * drdx) + SigmadV + qcv])
 
     return s
 
@@ -95,20 +87,33 @@ def source(u, q, w, v, x, t, mu, eta):
 def fbou(u, q, w, v, x, t, mu, eta, uhat, n, tau):
     tau = gettau(uhat, mu, eta, x, n)
 
-    f = fluxWall(u, q, w, v, x, t, mu, eta)
-    fw0 = f[0] * n[0] + tau[0] * (u[0] - uhat[0])
-    fw1 = f[1] * n[0] + tau[1] * (u[1] - uhat[1])
-    fw2 = f[2] * n[0] + tau[2] * (u[2] - uhat[2])
-    fw = array([fw0, fw1, fw2])
+    f1i = fluxInviscid(uhat, x, mu, eta)
+    f1v = fluxViscous(uhat, q, x, mu, eta)
+    f = (f1i + f1v) * n[0]
+    fl0 = f[0] + tau[0] * (u[0] - uhat[0])
+    fl1 = f[1] + tau[1] * (u[1] - uhat[1])
+    fl2 = f[2] + tau[2] * (u[2] - uhat[2])
+    fl = array([fl0, fl1, fl2])
 
-    # Inviscid outer boundary
-    fi = fluxInviscid(u, x, mu, eta)
-    ft0 = fi[0] * n[0] + tau[0] * (u[0] - uhat[0])
-    ft1 = fi[1] * n[0] + tau[1] * (u[1] - uhat[1])
-    ft2 = fi[2] * n[0] + tau[2] * (u[2] - uhat[2])
-    ft = array([ft0, ft1, ft2])
+    # Upper boundary
+    fi = fluxInviscid(uhat, x, mu, eta)
+    fin = fi * n[0]
+    fv = fluxViscous(uhat, q, x, mu, eta)
+    fvn = fv * n[0]
+    fvn[2] = 0.0
 
-    fb = hstack((fw, ft))
+    un = u[1]*n[0]
+    unp = 0.5*(1+tanh(1000*un))*un
+    signunp = tanh(1000*unp)
+    fvn = signunp*fvn
+
+    fu = fin + fvn
+    fu0 = fu[0] + tau[0] * (u[0] - uhat[0])
+    fu1 = fu[1] + tau[1] * (u[1] - uhat[1])
+    fu2 = fu[2] + tau[2] * (u[2] - uhat[2])
+    fu = array([fu0, fu1, fu2])
+
+    fb = hstack((fl, fu))
     fb = reshape(fb, [3, 2], 'F')
     return fb
 
@@ -143,12 +148,12 @@ def initu(x, mu, eta):
 
     Fr = mu[3]
 
-    mw = weightedMass(x, mu, eta)
+    mw, dmdr = weightedMass(x, mu, eta)
 
     Tbot = 1.0
     Ttop = 6.0
     R0 = mu[15]
-    Ldim = mu[18]
+    Ldim = mu[17]
     h0 = 35000 / Ldim
 
     a0 = (-1 + (Fr ** 2) * R0)
@@ -186,24 +191,10 @@ def fluxInviscid(u, x, mu, eta):
 
     vx = srvx * sr1
 
-    mw = weightedMass(x, mu, eta)
-    p = srT / (gam + mw)
+    mw, dmdr = weightedMass(x, mu, eta)
+    p = srT / (gam * mw)
 
     fi = array([r * vx, srvx * vx + p, srT * vx])
-    return fi
-
-
-def fluxInviscidWall(u, x, mu, eta):
-    gam = mu[0]
-    r = u[0]
-    rho = exp(r)
-    sr = sqrt(rho)
-
-    Tbot = mu[7]
-    mw = weightedMass(x, mu, eta)
-    p = sr * Tbot / (gam * mw)
-
-    fi = array([0.0, p, 0.0])
     return fi
 
 
@@ -214,7 +205,7 @@ def fluxViscous(u, q, x, mu, eta):
     Gr = mu[1]
     Pr = mu[2]
     c23 = 2.0 / 3.0
-    mw = weightedMass(x, mu, eta)
+    mw, dmdr = weightedMass(x, mu, eta)
 
     r = u[0]
     srvx = u[1]
@@ -253,54 +244,11 @@ def fluxViscous(u, q, x, mu, eta):
     return fv
 
 
-def fluxViscousWall(u, q, x, mu, eta):
-    x1 = x[0]
-
-    gam = mu[0]
-    Gr = mu[1]
-    Pr = mu[2]
-    c23 = 2.0 / 3.0
-    mw = weightedMass(x, mu, eta)
-
-
-    r = u[0]
-    rho = exp(r)
-    sr = sqrt(rho)
-    sr1 = 1 / sr
-    vx = 0.0
-    T = 1.0
-
-    drdx = -q[0]
-    drvxdx = -q[1]
-    drTdx = -q[2]
-
-    dvxdx = sr1 * drvxdx - 0.5 * drdx * vx
-    dTdx = sr1 * drTdx - 0.5 * drdx * T
-    
-    # Viscosity
-    expmu = mu[11]
-    expKappa = mu[12]
-    nuEddy = mu[13]
-    alphaEddy = mu[14]
-
-    mustar = T**expmu
-    k0 = thermalConductivity(x,mu,eta)
-    kstar = k0*T **expKappa
-
-    nu = (mustar * sr1 + sr*nuEddy)/sqrt(gam * Gr)
-    fc = (kstar * sr1 + sr*alphaEddy)*mw*sqrt(gam / Gr) / Pr
-
-    trr = nu * c23 * 2 * dvxdx - 2 * c23 * vx / x1
-
-    fv = array([0, -trr, -fc * dTdx])
-    return fv
-
-
 def gettau(uhat, mu, eta, x, n):
     gam = mu[0]
     Gr = mu[1]
     Pr = mu[2]
-    mw = weightedMass(x, mu, eta)
+    mw, dmdr = weightedMass(x, mu, eta)
 
     r = uhat[0]
     srvx = uhat[1]
@@ -410,13 +358,16 @@ def EUVsource1D(u, x, t, mu, eta):
 
     alpha = IcosChi * alpha1 + (1 - IcosChi) * (IsinChi * alpha2 + (1 - IsinChi) * 1e2)
 
-    Chi = zeros([nspecies,1])
+    Chi = zeros(nspecies,1)
     Chi[0] = 1.0
 
     for iSpecies in range(2, nspecies+1):
         coeffsDensity = eta[(3+nspecies)*nWaves+4*(iSpecies-2):(3+nspecies)*nWaves+4*(iSpecies-1)]
         Chi[iSpecies-1] = coeffsDensity[0]*exp(coeffsDensity[1]*(r-R0)*H0) + coeffsDensity[2]*exp(coeffsDensity[3]*(r-R0)*H0)
         Chi[0] = Chi[0] - Chi[iSpecies-1]
+
+        print(Chi)
+
 
     mass = eta[(3+nspecies)*nWaves+4*(nspecies-1):(3+nspecies)*nWaves+4*(nspecies-1)+nspecies]
     #Alert: new change for consistency with total mass (not pushed yet in the Matlab version)
@@ -432,20 +383,22 @@ def EUVsource1D(u, x, t, mu, eta):
     F74113 = eta[2*nWaves:3*nWaves]
 
     for iSpecies in range(0,nspecies):
+        Q = 0
         crossSection = eta[(3+iSpecies-1)*nWaves:(3+iSpecies)*nWaves]
-        tau = M0*Chi(iSpecies)*crossSection*alpha/mass(iSpecies)
-
+        tau = M0*Chi[iSpecies]*crossSection*alpha/mass[iSpecies]
         slope0 = 1 + AFAC * (F10p7_mean - 80)
-        Islope = 0.5 * (1 + tanh(1000 * (slope0 - 0.8)))
-        slopeIntensity = slope0 * Islope + 0.8 * (1 - Islope)
-        Intensity0 = F74113 * slopeIntensity
-        Intensity = Intensity0 * exp(-tau)
+        for iWave in range(0,nWaves):
+            Islope = 0.5 * (1 + tanh(1000 * (slope0[iWave] - 0.8)))
+            slopeIntensity = slope0[iWave] * Islope + 0.8 * (1 - Islope)
+            Intensity0 = F74113[iWave] * slopeIntensity
+            Intensity = Intensity0 * exp(-tau[iWave])
 
-        Q = sum(crossSection * Intensity / lambdaw)
-        s_EUV = s_EUV + Chi(iSpecies)*Q*mw/mass(iSpecies)
+            Q = Q + crossSection[iWave] * Intensity / lambdaw[iWave]
+        s_EUV = s_EUV + Chi[iSpecies]*Q*mw/mass[iSpecies]
 
     eff = mu[6]
     s_EUV = gam * gam1 * eff * s_EUV / K0
+
 
     return s_EUV
 
@@ -459,11 +412,11 @@ def weightedMass(x, mu, eta):
     r = x[0]
 
     R0 = mu[15]
-    H0 = mu[18]
+    H0 = mu[17]
 
     #Compute weighted density compositions (n_i/rho = Chi/mi)
-    Chi = zeros([nspecies,1])
-    dChidr = zeros([nspecies,1])
+    Chi = zeros(nspecies,1)
+    dChidr = zeros(nspecies,1)
     Chi[0] = 1.0
 
     for iSpecies in range(2, nspecies+1):
@@ -485,6 +438,9 @@ def weightedMass(x, mu, eta):
     mw = 1/mw
     dmdr = -mw*mw*dmdr
 
+    mw = 1
+    dmdr = 0
+
     return mw, dmdr
 
 def thermalConductivity(x, mu, eta):
@@ -495,10 +451,10 @@ def thermalConductivity(x, mu, eta):
     r = x[0]
 
     R0 = mu[15]
-    H0 = mu[18]
+    H0 = mu[17]
 
     #Compute weighted density compositions (n_i/rho = Chi/mi)
-    Chi = zeros([nspecies,1])
+    Chi = zeros(nspecies,1)
     Chi[0] = 1.0
 
     for iSpecies in range(2, nspecies+1):
@@ -510,5 +466,7 @@ def thermalConductivity(x, mu, eta):
     ckappai = eta[(3+nspecies)*nWaves+4*(nspecies-1)+nspecies:(3+nspecies)*nWaves+4*(nspecies-1)+2*nspecies]
     for iSpecies in range(0, nspecies):
         kappa = kappa + ckappai[iSpecies]*Chi[iSpecies]
+
+    kappa = 1
 
     return kappa
