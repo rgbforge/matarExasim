@@ -5,6 +5,8 @@ ne = size(t,2);
 face = getelemface(dim,elemtype);
 nvf,nfe = size(face);
 
+ind2 = min(2, nvf)
+
 t2fl = reshape(t[face[:],:], nvf, nfe*ne);
 #pf = reshape(p[:,t2fl[:]], dim, nvf, nfe*ne);
 #pf = reshape(sum(pf,dims=2)/nvf,dim,nfe,ne);
@@ -25,7 +27,7 @@ for i = 1:length(ind) # for each element on the domain boundary
     for k = 1:length(bndexpr) # for each boundary expression
         #a = bndexpr[k](pf[:,l,e]); # evaluate the boundary expression
         a1 = bndexpr[k](pf[:,1,l,e]); 
-        a2 = bndexpr[k](pf[:,2,l,e]); 
+        a2 = bndexpr[k](pf[:,ind2,l,e]); 
         a3 = bndexpr[k](pf[:,nvf,l,e]); 
         if a1[1] && a2[1] && a3[1] # check if element e belong to this boundary
             f[l,e] = k; # then set f(l,e) to k

@@ -21,9 +21,9 @@ if dim<=2
         facecon[:,1,i] = (e1-1)*npe .+ perm[:,l1];
 
         if e2>0 # face i is an interior face
-            facecon[:,2,i] = (e2-1)*npe .+ perm[permind,l2];
+            facecon[:,2,i] .= (e2-1)*npe .+ perm[permind,l2];
         else
-            facecon[:,2,i] = facecon[:,1,i];
+            facecon[:,2,i] .= facecon[:,1,i];
         end
     end
 else

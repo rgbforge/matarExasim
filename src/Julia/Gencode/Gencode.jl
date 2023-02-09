@@ -104,7 +104,7 @@ if isdefined(pdemodel, Symbol("eos"))
         f = reshape([f],1,1);
     end
     f = f[:];
-    gencodeelem2("Eos" * strn, f, xdg, udg, odg, wdg, uinf, param, time);
+    gencodeelem2("EoS" * strn, f, xdg, udg, odg, wdg, uinf, param, time);
 
     nf = length(f);
     nu = length(u);
@@ -116,15 +116,15 @@ if isdefined(pdemodel, Symbol("eos"))
         dfdu[m + nf*(n-1)] = diff(f[m],u[n]);      
       end
     end        
-    gencodeelem2("EoSdu" + strn, dfdu, xdg, udg, odg, wdg, uinf, param, time);    
+    gencodeelem2("EoSdu" * strn, dfdu, xdg, udg, odg, wdg, uinf, param, time);    
 
     dfdw = [SymPy.symbols("dfdw$i") for i=1:(nf*nw)];
     for n = 1:nw
       for m = 1:nf      
-        dfdw[m + nf*(n-1)] = diff(f[m],w[n]);      
+        dfdw[m + nf*(n-1)] = diff(f[m],wdg[n]);      
       end
     end        
-    gencodeelem2("EoSdw" + strn, dfdw, xdg, udg, odg, wdg, uinf, param, time);    
+    gencodeelem2("EoSdw" * strn, dfdw, xdg, udg, odg, wdg, uinf, param, time);    
 else
     nocodeelem2("EoS" * strn);
     nocodeelem2("EoSdu" * strn);

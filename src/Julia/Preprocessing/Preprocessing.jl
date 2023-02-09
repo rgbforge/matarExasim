@@ -159,8 +159,43 @@ for i = 1:mpiprocs
 
     cgelcon,rowent2elem,colent2elem,cgent2dgent,~ = mkcgent2dgent(xdg,1e-8);
 
+    if (mpiprocs>1)
+        print("Writing mesh into file " * string(i) * "\n");
+        fileID1 = open(string(filename  * "/sol", string(string(i), ".bin")),"w");
+    else
+        print("Writing mesh into file \n");
+        fileID1 = open(string(filename  * "/sol", ".bin"),"w");
+    end
+    ndims = zeros(Int,13,1)
+    ndims[1] = length(dmd[i].elempart)
+    ndims[2] = sum(dmd[i].facepartpts)
+    ndims[3] = size(master.perm, 2)
+    ndims[4] = master.npe
+    ndims[5] = master.npf
+    ndims[6] = app.nc;
+    ndims[7] = app.ncu
+    ndims[8] = app.ncq
+    ndims[9] = app.ncw
+    ndims[10] = app.nco
+    ndims[11] = app.nch
+    ndims[12] = app.ncx
+    app.nce=2;
+    ndims[13] = app.nce;
+    println(ndims)
+
+    nsize = zeros(Int,20,1)
+    nsize[1] = length(ndims[:])
+    nsize[2] = length(xdg[:])
+    println(nsize)
+
+    write(fileID1,Float64(length(nsize[:])));
+    write(fileID1,Float64.(nsize[:]));
+    write(fileID1,Float64.(ndims[:]));
+    write(fileID1,Float64.(xdg[:]));
+    close(fileID1);
+
     if mpiprocs==1
-        writesol(filename  * "/sol",0,xdg);
+        # writesol(filename  * "/sol",0,xdg);
         ne = length(dmd[i].elempart);
         eblks,nbe = mkelemblocks(ne,app.neb);
         eblks = vcat(eblks, zeros(Int, 1, size(eblks,2)));
@@ -169,7 +204,7 @@ for i = 1:mpiprocs
         neb = maximum(eblks[2,:]-eblks[1,:])+1;
         nfb = maximum(fblks[2,:]-fblks[1,:])+1;
     else
-        writesol(filename  * "/sol",i,xdg);
+        # writesol(filename  * "/sol",i,xdg);
         me = cumsum([0; dmd[i].elempartpts[1]; dmd[i].elempartpts[2]; dmd[i].elempartpts[3]]);
         eblks,nbe = mkfaceblocks(me,[0 1 2],app.neb);
         mf = cumsum([0; dmd[i].facepartpts[:]]);

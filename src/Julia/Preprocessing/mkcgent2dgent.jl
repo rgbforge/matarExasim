@@ -8,8 +8,7 @@ cgnodes,cgelcon = mkelconcg(dgnodes);
 
 # CG node-to-element connectivities
 rowent2elem,colent2elem,~,~,nent = mkent2elem(cgelcon);
-
-cgent2dgent = colent2elem;
+cgent2dgent = copy(colent2elem);
 npe = size(dgnodes,1);
 dim = size(dgnodes,2);
 #nent = maximum(cgelcon[:]);
@@ -28,7 +27,6 @@ for i = 1:nent # for CG node i
         cgent2dgent[rowent2elem[i]+j] = (elem[j]-1)*npe+in[1]; # index of the matched DG node
     end
 end
-
 return cgelcon,rowent2elem,colent2elem,cgent2dgent,cgnodes
 
 end

@@ -54,7 +54,10 @@ function mkmaster(dim::IntP,porder::IntP,pgauss::IntP,elemtype::IntP,nodetype::I
 
 # node positions on the master element and master face
 xpe,telem,xpf,tface,perm = masternodes(porder,dim,elemtype);
-
+if (dim==1)
+    xpf = reshape([0.0],1,1) #TODO: type expects a matrix. There should be a better way
+    tface = reshape([1],1,1)
+end
 # Gauss points and weights on the master volume element
 gpe, gwe = gaussnodes(pgauss,dim,elemtype);
 
@@ -87,6 +90,7 @@ else
     gwf   = [1.0];
     shapfg = reshape([1.0],1,1,1);
     shapfn = reshape([1.0],1,1,1);
+    perm = transpose(perm)
 end
 
 npf = size(shapfg,1);
@@ -124,6 +128,10 @@ for d=1:2
     shap1dnt[:,:,d] = shap1dn[:,:,d]';
 end
 
+if dim == 1
+    gpf = transpose(gpf) #TODO: type expects a matrix
+    gwf = transpose(gwf)
+end
 master = MASTERStruct(dim, porder, pgauss, elemtype, nodetype, npe, npf,
     nge, ngf, np1d, ng1d, perm, shapegt, shapegw, shapfgt, shapfgw, shapent, shapen,
     shapfnt, shapfn, xpe, gpe, gwe, xpf, gpf, gwf, shap1dgt, shap1dgw, shap1dnt,

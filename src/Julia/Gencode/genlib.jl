@@ -16,7 +16,7 @@ if length(cpucompiler)>0
     run(str);
 
     str = cpucompiler * " -fPIC -O3 -c opuCore.cpp"
-    if length(cpulibflags)
+    if length(cpulibflags) > 0
         str = str * " " * cpulibflags
     end
     run(string2cmd(str));

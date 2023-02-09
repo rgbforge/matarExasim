@@ -30,6 +30,7 @@ if dim==1
     phielem[:,1] = 1.0 .- xi;
     phielem[:,2] = xi;
     phiface = [1.0];
+    perm = transpose(perm)
 elseif dim==2 && elemtype==0 # tri
     xi  = pelem[:,1];
     eta = pelem[:,2];
