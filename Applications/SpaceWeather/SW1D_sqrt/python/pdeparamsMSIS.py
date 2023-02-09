@@ -149,7 +149,7 @@ def pdeparams(pde, mesh, parameters):
     pde['saveSolFreq'] = freq_time_steps  # solution is saved every 100 time steps
     # steps at which solution are collected
     pde['soltime'] = np.arange(freq_time_steps.value, pde['dt'].shape[0], freq_time_steps)
-    pde['timestepOffset'] = parameters["t_restart"].value  # restart parameter
+    pde['timestepOffset'] = parameters["t_restart"]  # restart parameter
 
     # store physical parameters
     pde['physicsparam'] = np.array([parameters["gamma"],  # 0

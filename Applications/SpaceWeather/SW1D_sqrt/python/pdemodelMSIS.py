@@ -436,9 +436,6 @@ def weightedMass(x, mu, eta):
     mw = 1/mw
     dmdr = -mw*mw*dmdr
 
-    mw = 1
-    dmdr = 0
-
     return mw, dmdr
 
 def thermalConductivity(x, mu, eta):
@@ -464,7 +461,5 @@ def thermalConductivity(x, mu, eta):
     ckappai = eta[(3+nspecies)*nWaves+4*(nspecies-1)+nspecies:(3+nspecies)*nWaves+4*(nspecies-1)+2*nspecies]
     for iSpecies in range(0, nspecies):
         kappa = kappa + ckappai[iSpecies]*Chi[iSpecies]
-
-    kappa = 1
 
     return kappa

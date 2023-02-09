@@ -40,7 +40,7 @@ parameters = {
     "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 0.002 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
-    "t_restart": 0*u.s,  # restart at given time step (second)
+    "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611*u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
     "latitude": 32.7157*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?

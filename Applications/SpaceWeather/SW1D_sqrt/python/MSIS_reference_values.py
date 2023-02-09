@@ -85,6 +85,7 @@ def coefficient_fit(altitude_lower, altitude_mesh, data):
         ydata=data,
         full_output=True,
         p0=(0, 0, 0, 0),
+        method='dogbox',
         maxfev=int(1e7))
     return minimization_results[0]
 
