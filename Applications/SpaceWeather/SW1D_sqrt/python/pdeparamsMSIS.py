@@ -193,6 +193,17 @@ def pdeparams(pde, mesh, parameters):
                                       c_kappa_i  # 6
                                       ])
 
+    nspecies = 4
+    nWaves = 37
+    Chi = np.ones((4, 101))
+    r = np.linspace(float(pde['physicsparam'][15]), float(pde['physicsparam'][16]), 101)
+    for iSpecies in range(2, nspecies+1):
+        coeffsDensity = pde['externalparam'][(3+nspecies)*nWaves+4*(iSpecies-2):(3+nspecies)*nWaves+4*(iSpecies-1)]
+        Chi[iSpecies-1, :] = coeffsDensity[0]*np.exp(coeffsDensity[1]*(r-float(pde['physicsparam'][15]))*float(pde['physicsparam'][17])) +\
+                             coeffsDensity[2]*np.exp(coeffsDensity[3]*(r-float(pde['physicsparam'][15]))*float(pde['physicsparam'][17]))
+        Chi[0, :] = Chi[0, :] - Chi[iSpecies-1, :]
+
+
     # set solver parameters
     pde['extStab'] = parameters["ext_stab"]
     pde['tau'] = parameters["tau"]  # DG stabilization parameter

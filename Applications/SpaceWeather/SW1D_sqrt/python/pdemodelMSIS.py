@@ -360,11 +360,10 @@ def EUVsource1D(u, x, t, mu, eta):
 
     Chi = zeros(nspecies,1)
     Chi[0] = 1.0
-
-    for iSpecies in range(2, nspecies+1):
-        coeffsDensity = eta[(3+nspecies)*nWaves+4*(iSpecies-2):(3+nspecies)*nWaves+4*(iSpecies-1)]
-        Chi[iSpecies-1] = coeffsDensity[0]*exp(coeffsDensity[1]*(r-R0)*H0) + coeffsDensity[2]*exp(coeffsDensity[3]*(r-R0)*H0)
-        Chi[0] = Chi[0] - Chi[iSpecies-1]
+    # for iSpecies in range(2, nspecies+1):
+    #     coeffsDensity = eta[(3+nspecies)*nWaves+4*(iSpecies-2):(3+nspecies)*nWaves+4*(iSpecies-1)]
+    #     Chi[iSpecies-1] = coeffsDensity[0]*exp(coeffsDensity[1]*(r-R0)*H0) + coeffsDensity[2]*exp(coeffsDensity[3]*(r-R0)*H0)
+    #     Chi[0] = Chi[0] - Chi[iSpecies-1]
 
 
     mass = eta[(3+nspecies)*nWaves+4*(nspecies-1):(3+nspecies)*nWaves+4*(nspecies-1)+nspecies]
@@ -372,7 +371,8 @@ def EUVsource1D(u, x, t, mu, eta):
     mw = 0.0
     for iSpecies in range(0, nspecies):
         mw = mw + Chi[iSpecies]/mass[iSpecies]
-    mw = 1/mw
+    # todo: switch back!!!
+    mw = 1 #/mw
 
     # Compute EUV
     s_EUV = 0
@@ -433,8 +433,9 @@ def weightedMass(x, mu, eta):
     for iSpecies in range(0, nspecies):
         mw = mw + Chi[iSpecies]/mass[iSpecies]
         dmdr = dmdr + dChidr[iSpecies]/mass[iSpecies]
-    mw = 1/mw
-    dmdr = -mw*mw*dmdr
+    # todo: switch back!!!!
+    mw = 1 #/mw
+    dmdr = 0 #-mw*mw*dmdr
 
     return mw, dmdr
 
@@ -457,9 +458,10 @@ def thermalConductivity(x, mu, eta):
         Chi[iSpecies-1] = coeffsDensity[0]*exp(coeffsDensity[1]*(r-R0)*H0) + coeffsDensity[2]*exp(coeffsDensity[3]*(r-R0)*H0)
         Chi[0] = Chi[0] - Chi[iSpecies-1]
 
-    kappa = 0.0
-    ckappai = eta[(3+nspecies)*nWaves+4*(nspecies-1)+nspecies:(3+nspecies)*nWaves+4*(nspecies-1)+2*nspecies]
-    for iSpecies in range(0, nspecies):
-        kappa = kappa + ckappai[iSpecies]*Chi[iSpecies]
+    # todo: switch back!!!!
+    kappa = 1.0 #0.0
+    # ckappai = eta[(3+nspecies)*nWaves+4*(nspecies-1)+nspecies:(3+nspecies)*nWaves+4*(nspecies-1)+2*nspecies]
+    # for iSpecies in range(0, nspecies):
+    #     kappa = kappa + ckappai[iSpecies]*Chi[iSpecies]
 
     return kappa
