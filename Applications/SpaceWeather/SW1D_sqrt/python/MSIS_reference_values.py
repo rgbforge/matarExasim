@@ -6,6 +6,7 @@ import numpy as np
 import astropy.units as u
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.optimize import leastsq
 from scipy.optimize import minimize
 from functools import partial
 
@@ -63,7 +64,14 @@ def exp_model(altitude_mesh, a1, a2, a3, a4, altitude_low_boundary):
            a3 * np.exp(a4 * (altitude_mesh - altitude_low_boundary))
 
 
-def coefficient_fit(altitude_lower, altitude_mesh, data):
+def minimize_func(theta, altitude_low_boundary, altitude_mesh, data, weights):
+    a1, a2, a3, a4 = theta
+    model_eval = exp_model(altitude_mesh=altitude_mesh, a1=a1, a2=a2, a3=a3, a4=a4,
+                           altitude_low_boundary=altitude_low_boundary)
+    return (model_eval - data)*weights
+
+
+def coefficient_fit(altitude_lower, altitude_mesh, data, species):
     """ A function to fit:
 
             data ~ a1 * exp(a2 * (h - H0)) + a3 * exp(a4 * (h - H0))
@@ -77,16 +85,42 @@ def coefficient_fit(altitude_lower, altitude_mesh, data):
     :param altitude_mesh: MSIS results altitude mesh (later converted to meters).
     :param altitude_lower: altitude lower boundary (later converted to meters).
     :param data: mass fraction of a particular species (dimensionless quantity).
+    :param species: str. type of species will change the initialization.
     :return: optimal coefficients [a1, a2, a3, a4] that minimize the sum of squares of the error between the
              nonlinear model and the MSIS data.
     """
-    minimization_results = curve_fit(
-        f=partial(exp_model, altitude_low_boundary=altitude_lower.to(u.m).value),
-        xdata=altitude_mesh.to(u.m).value,
-        ydata=data,
-        p0=(0, 0, 0, 0),
-        #method='dogbox',
-        maxfev=int(1e8))
+    if species == "N2":
+        sigma = np.arange(len(altitude_mesh))[::-1]
+        p0 = np.array([60, 0, -60, 0])
+        weights = sigma / np.sum(sigma)
+
+    elif species == "O2":
+        weights = np.ones(len(altitude_mesh))
+        p0 = np.array([700, 0, -700, 0])
+
+    elif species == "He":
+        weights = np.ones(len(altitude_mesh))
+        p0 = np.array([0, 0, 0, 0])
+
+    else:
+        weights = np.ones(len(altitude_mesh))
+        p0 = np.array([0, 0, 0, 0])
+
+    minimization_results = leastsq(func=minimize_func,
+                                   x0=p0,
+                                   full_output=True,
+                                   args=(altitude_lower.to(u.m).value, altitude_mesh.to(u.m).value, data, weights),
+                                   ftol=1e-11,
+                                   maxfev=int(1e8))
+
+    # minimization_results = curve_fit(
+    #                         f=partial(exp_model, altitude_low_boundary=altitude_lower.to(u.m).value),
+    #                         xdata=altitude_mesh.to(u.m).value,
+    #                         ydata=data,
+    #                         p0=p0,
+    #                         maxfev=int(1e7),
+    #                         sigma=sigma,
+    #                         absolute_sigma=True)
     return minimization_results[0]
 
 
@@ -158,21 +192,30 @@ def MSIS_reference_values(parameters, mass):
 
     # optimal coefficients to fit to exponential function, in MATLAB this variable is called "cchi".
     c_chi = np.zeros((len(parameters["chemical_species"]) - 1, 4))
+
     # skip oxygen since it does not fit well to the exponential sum model (measured in meters).
-    # todo: compute partial densities.
-    check = np.ones(len(altitude_mesh))
+    # also double check that the atomic oxygen partial density is non-negative!!
+    atomic_oxygen_model = np.ones(len(altitude_mesh))
+    atomic_oxygen_data = np.ones(len(altitude_mesh))
     for ii in range(len(parameters["chemical_species"]) - 1):
         c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"].to(u.km),  # in km
                                        data=chi[:, ii + 1],  # skip oxygen
-                                       altitude_mesh=altitude_mesh * u.km)  # in km
+                                       altitude_mesh=altitude_mesh * u.km,
+                                       species=parameters["chemical_species"][ii + 1])  # in km
 
-        check = check - exp_model(altitude_mesh=(altitude_mesh*u.km).to(u.m).value,
+        model_results = exp_model(altitude_mesh=(altitude_mesh * u.km).to(u.m).value,
                                   a1=c_chi[ii, 0],
                                   a2=c_chi[ii, 1],
                                   a3=c_chi[ii, 2],
                                   a4=c_chi[ii, 3],
                                   altitude_low_boundary=parameters["altitude_lower"].to(u.m).value)
-    if np.min(check) < 0:
-        print("non-physical initial condition (negative density for atomic oxygen")
+
+        atomic_oxygen_model += - model_results
+        atomic_oxygen_data += - chi[:, ii+1]
+
+    if np.min(atomic_oxygen_model) < 0:
+        print("minimum partial density of atomic oxygen computed from data =", np.min(atomic_oxygen_data))
+        raise ValueError("non-physical initial condition (negative density for atomic oxygen). This is most likely due "
+                         "to the exponential model parameter fit. Please check that. ")
 
     return density_mean_total[0], T0, chi, c_chi

@@ -45,7 +45,7 @@ parameters = {
     "latitude": 32.7157*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
-    "altitude_upper": (500*u.km).to(u.m),  # computational domain altitude upper bound (meters)
+    "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
     "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
     "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
