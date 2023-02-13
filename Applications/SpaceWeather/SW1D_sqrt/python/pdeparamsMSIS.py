@@ -31,7 +31,7 @@ def pdeparams(pde, mesh, parameters):
     :return: updated pde (dict) , updated mesh (dict).
     """
     # read in F10.7 data
-    data = sw.sw_daily()
+    data = sw.sw_daily(update=True)
     F10p7 = data.f107_adj[parameters["date"]] * (1E-22 * u.W * u.Hz / (u.m ** 2))
     F10p7_81 = data.f107_81lst_adj[parameters["date"]] * (1E-22 * u.W * u.Hz / (u.m ** 2))
 
@@ -160,9 +160,6 @@ def pdeparams(pde, mesh, parameters):
                                     M.value,  # 5
                                     parameters["euv_efficiency"],  # 6
                                     declination_sun0,  # 7
-                                    # todo: Jordi, does the F10.7 units matter?
-                                    #  Jan 30th meeting: the units are sfu [60-200]
-                                    #  will double check later as well.
                                     (F10p7.value + parameters["F10p7_uncertainty"].value) * 1E22,  # 8
                                     (F10p7_81.value + parameters["F10p7-81_uncertainty"].value) * 1E22,  # 9
                                     day_of_year,  # 10
@@ -192,7 +189,7 @@ def pdeparams(pde, mesh, parameters):
                                       mass,  # 5
                                       c_kappa_i  # 6
                                       ])
-
+    # todo: testing!
     nspecies = 4
     nWaves = 37
     Chi = np.ones((4, 101))

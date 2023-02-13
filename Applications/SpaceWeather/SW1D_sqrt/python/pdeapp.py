@@ -38,14 +38,14 @@ parameters = {
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_step": 5 * u.s,  # time step (seconds)
-    "t_simulation": 0.002 * u.d,  # length of simulation (days)
+    "t_simulation": 0.1 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611*u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
     "latitude": 32.7157*u.deg,  # latitude coordinates
     "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
-    "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
+    "altitude_upper": (500*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
     "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
     "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
@@ -103,7 +103,7 @@ compilerstr = Gencode.compilecode(pde)
 runstr = Gencode.runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt("time.txt", float(time.time() - start_time))
+np.savetxt("time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
@@ -139,5 +139,4 @@ ax.set_xlabel("Altitude")
 ax.legend()
 ax.set_xticks([100, 200, 300, 400, 500])
 plt.tight_layout()
-#plt.savefig("figs/sol_example.png")
 plt.show()
