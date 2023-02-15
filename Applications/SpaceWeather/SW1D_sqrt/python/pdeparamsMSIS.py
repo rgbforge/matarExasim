@@ -264,4 +264,5 @@ def pdeparams(pde, mesh, parameters):
     #   48 x 6 ---> transpose ---> 6 x 3 x 16 -----> transpose -----> 3 x 6 x 16 result.
     #   need to test this.
     mesh["udg"] = u0.reshape((n_points_per_element, 6, n_elements), order='F')
+    mesh['udg'] = udg
     return pde, mesh

@@ -146,15 +146,28 @@ def preprocessing(app,mesh):
         nsize = zeros((20,1));
         nsize[1-1] = size(ndims);
         nsize[2-1] = size(xdg);
-        # nsize[3-1] = size(udg);
-        # nsize[4-1] = size(odg);
-        # nsize[5-1] = size(wdg);
+        if 'udg' in mesh:
+            nsize[3-1] = size(ndarray.flatten(mesh['udg'][:,:,dmd[i]['elempart']]))
+        if 'odg' in mesh:
+            nsize[4-1] = size(ndarray.flatten(mesh['odg'][:,:,dmd[i]['elempart']]))
+        if 'wdg' in mesh:
+            nsize[5-1] = size(ndarray.flatten(mesh['wdg'][:,:,dmd[i]['elempart']]))
 
         array(size(nsize), dtype=float64).tofile(fileID1);
         nsize.astype('float64').tofile(fileID1);
         ndims.astype('float64').tofile(fileID1);
         xdg = array(xdg).flatten(order = 'F');
         xdg.astype('float64').tofile(fileID1);
+        if 'udg' in mesh:
+            udg = ndarray.flatten(mesh['udg'][:,:,dmd[i]['elempart']], order='F')
+            udg.astype('float64').tofile(fileID1);
+        if 'odg' in mesh:
+            odg = ndarray.flatten(mesh['odg'][:,:,dmd[i]['elempart']], order='F')
+            odg.astype('float64').tofile(fileID1);
+        if 'wdg' in mesh:
+            wdg = ndarray.flatten(mesh['wdg'][:,:,dmd[i]['elempart']], order='F')
+            wdg.astype('float64').tofile(fileID1);
+
         fileID1.close();
 
 

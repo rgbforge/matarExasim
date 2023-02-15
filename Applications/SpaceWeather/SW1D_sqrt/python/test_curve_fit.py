@@ -67,7 +67,7 @@ for ii in range(1, 4):
                       a4=c_chi[ii-1, 3],
                       altitude_low_boundary=parameters["altitude_lower"].to(u.m).value)
     # evaluate l2 error for this iteration.
-    l2_error[ii + 1] = np.linalg.norm(chi[:, ii + 1] - model, ord=2)
+    l2_error[ii] = np.linalg.norm(chi[:, ii] - model, ord=2)
     # update atomic oxygen density
     atomic_oxygen += -model
 

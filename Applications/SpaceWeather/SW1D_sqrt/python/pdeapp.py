@@ -37,13 +37,13 @@ parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 5 * u.s,  # time step (seconds)
-    "t_simulation": 0.1 * u.d,  # length of simulation (days)
+    "t_step": 30 * u.s,  # time step (seconds)
+    "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611*u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
     "latitude": 32.7157*u.deg,  # latitude coordinates
-    "euv_efficiency": 0.21,  # EUV efficiency # todo: what are the units?
+    "euv_efficiency": 0.3,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
@@ -52,10 +52,10 @@ parameters = {
     "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
     "exp_mu": 0.5,  # exponential of reference mu
-    "exp_kappa": 0.75,  # exponential of reference kappa
+    "exp_kappa": 0.69,  # exponential of reference kappa
     "tau_a": 5,  # parameter relating to solver. # todo: define this better.
     "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
-    "ref_kappa_scale": 0.4,  # multiply the reference value of the thermal conductivity by this value
+    "ref_kappa_scale": 0.5,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
     "p_order": 2,  # order of polynomial in solver
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
@@ -67,7 +67,7 @@ parameters = {
     "linear_solver_iter": 30,  # GMRES (linear solver) solver iterations
     "pre_cond_matrix_type": 2,  # preconditioning type
     "newton_tol": 1e-10,  # newton iterations
-    "mat_vec_tol": 1e-7,  # todo: define
+    "mat_vec_tol": 1e-6,  # todo: define
     "rb_dim": 8,  # todo: define
     "resolution": 16,  # set one-dimensional mesh resolution
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
@@ -76,8 +76,8 @@ parameters = {
     "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
     "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
-    "nu_eddy": 100,  # eddy viscosity
-    "alpha_eddy": 35,  # eddy conductivity
+    "nu_eddy": 20,  # eddy viscosity
+    "alpha_eddy": 20,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
     "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation
     "n_latitude_MSIS": 35,  # number of mesh points in the longitude direction for MSIS simulation
@@ -117,23 +117,26 @@ dgnodes = Preprocessing.createdgnodes(mesh["p"],
                                       mesh["curvedboundaryexpr"],
                                       pde["porder"])
 # get parameters
-rho0 = pde["physicsparam"][6]
-H0 = pde["physicsparam"][11]
+rho0 = pde["physicsparam"][19]
+H0 = pde["physicsparam"][17]
 
 fig, ax = plt.subplots(figsize=(4, 3))
-rho = np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T)
-vr = np.ndarray.flatten(sol[:, 1, :, -1].T) / np.sqrt(rho)
-T = np.ndarray.flatten(sol[:, 2, :, -1].T) / np.sqrt(rho)
+index = -1
+
+rho = np.ndarray.flatten(np.exp(sol[:, 0, :, index]).T)
+logrho = np.log10(rho)
+vr = np.ndarray.flatten(sol[:, 1, :, index].T) / np.sqrt(rho)
+T = np.ndarray.flatten(sol[:, 2, :, index].T) / np.sqrt(rho)
 grid = np.ndarray.flatten(dgnodes[:, 0, :].T)
 phys_grid = ((grid * float(H0) - R_earth.value) * u.m).to(u.km)
 
-ax.plot(phys_grid.T, rho.T, label=r"$\rho$")
+ax.plot(phys_grid.T, logrho.T, label=r"$\rho$")
 ax.plot(phys_grid.T, vr.T, label=r"$v_{r}$")
 ax.plot(phys_grid.T, T.T, label=r"$T$")
 
-ax.plot(phys_grid.T, np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T), label=r"$u_{1}$")
-ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 1, :, -1].T), label=r"$u_{2}$")
-ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 2, :, -1].T), label=r"$u_{3}$")
+#ax.plot(phys_grid.T, np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T), label=r"$u_{1}$")
+#ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 1, :, -1].T), label=r"$u_{2}$")
+#ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 2, :, -1].T), label=r"$u_{3}$")
 
 ax.set_xlabel("Altitude")
 ax.legend()

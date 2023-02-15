@@ -91,16 +91,16 @@ def coefficient_fit(altitude_lower, altitude_mesh, data, species):
     """
     if species == "N2":
         sigma = np.arange(len(altitude_mesh))[::-1]
-        p0 = np.array([60, 0, -60, 0])
+        p0 = np.array([355, -1.33e-5, -355, -1.33e-5])
         weights = sigma / np.sum(sigma)
 
     elif species == "O2":
         weights = np.ones(len(altitude_mesh))
-        p0 = np.array([700, 0, -700, 0])
+        p0 = np.array([9.6e-2, -1e-5, 0.1, -5e-5])
 
     elif species == "He":
         weights = np.ones(len(altitude_mesh))
-        p0 = np.array([0, 0, 0, 0])
+        p0 = np.array([5e-5, 1e-5, 3e-4, 1e-5])
 
     else:
         weights = np.ones(len(altitude_mesh))
@@ -197,6 +197,7 @@ def MSIS_reference_values(parameters, mass):
     # also double check that the atomic oxygen partial density is non-negative!!
     atomic_oxygen_model = np.ones(len(altitude_mesh))
     atomic_oxygen_data = np.ones(len(altitude_mesh))
+    minvalue = 1
     for ii in range(len(parameters["chemical_species"]) - 1):
         c_chi[ii, :] = coefficient_fit(altitude_lower=parameters["altitude_lower"].to(u.km),  # in km
                                        data=chi[:, ii + 1],  # skip oxygen
@@ -210,12 +211,14 @@ def MSIS_reference_values(parameters, mass):
                                   a4=c_chi[ii, 3],
                                   altitude_low_boundary=parameters["altitude_lower"].to(u.m).value)
 
+        minvalue = np.min(np.array([minvalue,np.min(model_results)]))
         atomic_oxygen_model += - model_results
         atomic_oxygen_data += - chi[:, ii+1]
 
-    if np.min(atomic_oxygen_model) < 0:
-        print("minimum partial density of atomic oxygen computed from data =", np.min(atomic_oxygen_data))
-        raise ValueError("non-physical initial condition (negative density for atomic oxygen). This is most likely due "
+    minvalue = np.min(np.array([minvalue,np.min(atomic_oxygen_model)]))
+    if minvalue < 0:
+        print("minimum partial density of some component computed from data =", minvalue)
+        raise ValueError("non-physical initial condition (negative density for some component). This is most likely due "
                          "to the exponential model parameter fit. Please check that. ")
 
     return density_mean_total[0], T0, chi, c_chi
