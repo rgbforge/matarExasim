@@ -73,14 +73,16 @@ for ii in range(1, 4):
 
     # plot
     ax.plot(chi[:, ii], altitude_mesh, c=c, label=label)
-    ax.scatter(model, altitude_mesh, c=c, s=2, label=str(label) + str(" model"))
+    ax.scatter(model, altitude_mesh, c=c, s=2)
 
 l2_error[0] = np.linalg.norm(atomic_oxygen - chi[:, 0], ord=2)
 ax.plot(chi[:, 0], altitude_mesh, c="r", label="O")
-ax.scatter(atomic_oxygen, altitude_mesh, c="r", s=2, label=str("O") + str(" model"))
+ax.scatter(atomic_oxygen, altitude_mesh, c="r", s=2)
 ax.legend()
 ax.set_xlim(0, 1)
 ax.set_ylim(100, 600)
-ax.set_xlabel(r"$X_{i}(\rho_{I}/\rho)$")
+ax.set_xlabel(r"$X_{i}(\rho_{i}/\rho)$")
 ax.set_ylabel(r"$h$ (km)")
+ax.set_title(str(parameters["date"]))
+plt.savefig("../figs/coefficients_fit.png", dpi=800)
 plt.show()
