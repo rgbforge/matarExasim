@@ -62,10 +62,19 @@ def exp_model(altitude_mesh, a1, a2, a3, a4, altitude_low_boundary):
 
 
 def minimize_func(theta, altitude_low_boundary, altitude_mesh, data, weights):
+    """ loss function for nonlinear least squares minimization.
+
+    :param theta: list of parameters [a1, a2, a3, a4]
+    :param altitude_low_boundary: altitude lower boundary (in km)
+    :param altitude_mesh: MSIS results altitude mesh (in km).
+    :param data: partial density for a particular chemical specie.
+    :param weights: weighted least squares (especially for N2 which has a more challenging shape to fit to).
+    :return: loss (wighted square error).
+    """
     a1, a2, a3, a4 = theta
     model_eval = exp_model(altitude_mesh=altitude_mesh, a1=a1, a2=a2, a3=a3, a4=a4,
                            altitude_low_boundary=altitude_low_boundary)
-    return (model_eval - data)*weights
+    return (model_eval - data) * weights
 
 
 def coefficient_fit(altitude_lower, altitude_mesh, data, species):
@@ -87,9 +96,8 @@ def coefficient_fit(altitude_lower, altitude_mesh, data, species):
              nonlinear model and the MSIS data.
     """
     if species == "N2":
-        sigma = np.arange(len(altitude_mesh))[::-1]
+        weights = np.arange(len(altitude_mesh))[::-1]
         p0 = np.array([355, -1.33e-5, -355, -1.33e-5])
-        weights = sigma / np.sum(sigma)
 
     elif species == "O2":
         weights = np.ones(len(altitude_mesh))

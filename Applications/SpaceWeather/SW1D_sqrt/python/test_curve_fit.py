@@ -72,17 +72,18 @@ for ii in range(1, 4):
     atomic_oxygen += -model
 
     # plot
-    ax.plot(chi[:, ii], altitude_mesh, c=c, label=label)
-    ax.scatter(model, altitude_mesh, c=c, s=2)
+    ax.plot(chi[:, ii], altitude_mesh, c=c, label=label + str(" model"))
+    ax.scatter(model, altitude_mesh, c=c, s=2, label=label + str(" data"))
 
 l2_error[0] = np.linalg.norm(atomic_oxygen - chi[:, 0], ord=2)
-ax.plot(chi[:, 0], altitude_mesh, c="r", label="O")
-ax.scatter(atomic_oxygen, altitude_mesh, c="r", s=2)
+ax.plot(chi[:, 0], altitude_mesh, c="r", label="O model")
+ax.scatter(atomic_oxygen, altitude_mesh, c="r", s=2, label="O data")
+
 ax.legend()
 ax.set_xlim(0, 1)
 ax.set_ylim(100, 600)
 ax.set_xlabel(r"$X_{i}(\rho_{i}/\rho)$")
 ax.set_ylabel(r"$h$ (km)")
 ax.set_title(str(parameters["date"]))
-plt.savefig("../figs/coefficients_fit.png", dpi=800)
+plt.savefig("../figs/MSIS_coefficients_fit_" + str(parameters["date"]) + ".png", dpi=800)
 plt.show()
