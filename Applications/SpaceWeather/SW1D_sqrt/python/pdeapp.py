@@ -41,7 +41,7 @@ parameters = {
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
-    "longitude": -117.1611*u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
+    "longitude": -117.1611*u.deg,  # longitude coordinates # todo: (These are San Diego coordinates!)
     "latitude": 32.7157*u.deg,  # latitude coordinates
     "euv_efficiency": 0.3,  # EUV efficiency # todo: what are the units?
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
@@ -93,53 +93,84 @@ pde = Gencode.setcompilers(pde)
 # generate input files and store them in datain folder
 pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 
-# generate source codes and store them in app folder
-Gencode.gencode(pde)
-
-# compile source codes to build an executable file and store it in app folder
-compilerstr = Gencode.compilecode(pde)
-
-# run source code and save solution in dataout folder.
-runstr = Gencode.runcode(pde, 1)
-
-# save time it took to run in sec.
-np.savetxt("time.txt", np.array([time.time() - start_time]))
+# # generate source codes and store them in app folder
+# this is only when you change the pdemodel file. so we do not need this anymore.
+# Gencode.gencode(pde)
+#
+# # compile source codes to build an executable file and store it in app folder
+# compilerstr = Gencode.compilecode(pde)
+#
+# # run source code and save solution in dataout folder.
+# runstr = Gencode.runcode(pde, 1)
+#
+# # save time it took to run in sec.
+# np.savetxt("time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
+# solution dimensions: 3 (s1) x 6 (s2) x 16 (s3) x 95 (s4)
+# s1 -> number of discretization points per element
+# s2 -< number of components of your solution :
+# log(rho), sqrt(rho)*v, sqrt(rho)*T, and their corresponding derivatives (d·/dx)
+# s3 -> number of elements of the grid
+# s4 -> number of discretization points per element
 sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
 
-
-# generate mesh nodes
-dgnodes = Preprocessing.createdgnodes(mesh["p"],
-                                      mesh["t"],
-                                      mesh["f"],
-                                      mesh["curvedboundary"],
-                                      mesh["curvedboundaryexpr"],
-                                      pde["porder"])
 # get parameters
 rho0 = pde["physicsparam"][19]
 H0 = pde["physicsparam"][17]
+T0 = pde["physicsparam"][18]
 
-fig, ax = plt.subplots(figsize=(4, 3))
+fig, ax = plt.subplots(nrows=3, sharex=True, figsize=(7, 7))
 index = -1
 
-rho = np.ndarray.flatten(np.exp(sol[:, 0, :, index]).T)
-logrho = np.log10(rho)
-vr = np.ndarray.flatten(sol[:, 1, :, index].T) / np.sqrt(rho)
-T = np.ndarray.flatten(sol[:, 2, :, index].T) / np.sqrt(rho)
-grid = np.ndarray.flatten(dgnodes[:, 0, :].T)
-phys_grid = ((grid * float(H0) - R_earth.value) * u.m).to(u.km)
+rho = np.exp(sol[:, 0, :, index]).flatten("F")
+vr = sol[:, 1, :, index].flatten("F") / np.sqrt(rho)
+T = (sol[:, 2, :, index].flatten("F") / np.sqrt(rho))
+computational_grid = mesh["dgnodes"].flatten("F")
+phys_grid = ((computational_grid * float(H0) - R_earth.value) * u.m).to(u.km)
 
-ax.plot(phys_grid.T, logrho.T, label=r"$\rho$")
-ax.plot(phys_grid.T, vr.T, label=r"$v_{r}$")
-ax.plot(phys_grid.T, T.T, label=r"$T$")
+ax[0].plot(phys_grid, rho*float(rho0))
+ax[1].plot(phys_grid, vr)
+ax[2].plot(phys_grid, T*float(T0))
 
-#ax.plot(phys_grid.T, np.ndarray.flatten(np.exp(sol[:, 0, :, -1]).T), label=r"$u_{1}$")
-#ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 1, :, -1].T), label=r"$u_{2}$")
-#ax.plot(phys_grid.T, np.ndarray.flatten(sol[:, 2, :, -1].T), label=r"$u_{3}$")
+ax[0].set_ylabel(r"$\rho$ [kg/$m^3$]")
+ax[1].set_ylabel(r"$v_{r}$ [m/s]")
+ax[2].set_ylabel(r"T [K]")
 
-ax.set_xlabel("Altitude")
-ax.legend()
-ax.set_xticks([100, 200, 300, 400, 500])
+ax[2].set_xlabel("Altitude [km]")
+ax[2].set_xticks([100, 200, 300, 400, 500, 600])
+ax[2].set_xlim(100, 600)
+ax[0].set_yscale("log")
 plt.tight_layout()
+plt.savefig("figs/GITM_1D_results.png", dpi=600)
+#plt.show()
+
+
+fig, ax = plt.subplots(nrows=3, sharex=True, figsize=(10, 5))
+n_time_step = np.shape(sol)[-1]
+rho_time_dependent = np.zeros((len(rho), n_time_step))
+v_time_dependent = np.zeros((len(rho), n_time_step))
+T_time_dependent = np.zeros((len(rho), n_time_step))
+for ii in range(n_time_step):
+    rho_time_dependent[:, ii] = np.exp(sol[:, 0, :, ii]).flatten("F")
+    v_time_dependent[:, ii] = sol[:, 1, :, ii].flatten("F") / np.sqrt(rho_time_dependent[:, ii])
+    T_time_dependent[:, ii] = sol[:, 2, :, ii].flatten("F") / np.sqrt(rho_time_dependent[:, ii])
+
+pos = ax[0].imshow(X=rho_time_dependent*float(rho0), aspect="auto")
+cbar = fig.colorbar(pos, ax=ax[0])
+pos = ax[1].imshow(X=v_time_dependent, aspect="auto")
+cbar = fig.colorbar(pos, ax=ax[1])
+pos = ax[2].imshow(X=T_time_dependent*float(T0), aspect="auto")
+cbar = fig.colorbar(pos, ax=ax[2])
+
+ax[0].set_title(r"$\rho$ [kg/$m^3$]")
+ax[1].set_title(r"$v_{r}$ [m/s]")
+ax[2].set_title(r"T [K]")
+
+ax[2].set_xlabel("time-interval")
+ax[0].set_ylabel("Altitude")
+ax[1].set_ylabel("Altitude")
+ax[2].set_ylabel("Altitude")
+plt.tight_layout()
+plt.savefig("figs/GITM_1D_results_time_dependent.png", dpi=600)
 plt.show()

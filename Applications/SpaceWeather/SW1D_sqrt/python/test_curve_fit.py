@@ -15,7 +15,7 @@ matplotlib.rc('ytick', labelsize=13)
 
 # specify model input parameters for summer solstice.
 parameters = {
-    "date": "2013-01-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "date": "2005-06-15 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611 * u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
     "latitude": 32.7157 * u.deg,  # latitude coordinates
@@ -38,7 +38,7 @@ for ii in range(len(parameters["chemical_species"])):
 
 # atomic mass unit
 amu = 1.66e-27 * u.kg
-# mass of neutrals (kg)
+# mass of neutrals (kg) vector of 4 components (length of species).
 mass = np.array(neutrals.values[i_species, 1], dtype=float) * amu
 
 altitude_mesh = np.linspace(parameters["altitude_lower"].to(u.km).value,

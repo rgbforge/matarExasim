@@ -263,10 +263,10 @@ def pdeparams(pde, mesh, parameters):
     #  can we avoid the transposing and directly provide the right ordering from u0?
     #   48 x 6 ---> transpose ---> 6 x 3 x 16 -----> transpose -----> 3 x 6 x 16 result.
     #   need to test this.
-    udg=np.zeros((n_points_per_element, 6, n_elements))
-    for ielem in range(0,n_elements):
-        for node in range(0,n_points_per_element):
-            udg[node,:,ielem] = u0[n_points_per_element*ielem + node,:]
+    udg = np.zeros((n_points_per_element, 6, n_elements))
+    for elem in range(n_elements):
+        for node in range(n_points_per_element):
+            udg[node, :, elem] = u0[n_points_per_element*elem + node, :]
 
     mesh['udg'] = udg
     return pde, mesh

@@ -149,6 +149,13 @@ def MSIS_reference_values(parameters, mass):
 
     # get data (F10.7, F10.7_81, Ap) needed to run MSIS.
     f10p7_msis, f10p7a_msis, ap_msis = msis.get_f107_ap(dates=parameters["date"])
+    # check the read indices are accurate.
+    if not np.isfinite(f10p7_msis):
+        raise ValueError("F10.7 for this time-period is Nan. ")
+    if not np.isfinite(f10p7a_msis):
+        raise ValueError("81-day average F10.7 for this time-period is Nan. ")
+    if not np.isfinite(ap_msis).any():
+        raise ValueError("Ap index for this time-period is Nan. ")
 
     # run MSIS, output is a tensor of dimensions: (n_dates, n_longitude, n_latitude, n_altitude, 11)
     # 11 stands for each species in the following order:
