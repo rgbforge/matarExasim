@@ -1,6 +1,7 @@
 """ Module to define the model input parameters driven by solar conditions.
-Latest update: Jan 17, 2023 [OI]
+Latest update: Feb 25th, 2023 [OI]
 """
+
 import numpy as np
 from pandas import read_csv
 import matplotlib.pyplot as plt
