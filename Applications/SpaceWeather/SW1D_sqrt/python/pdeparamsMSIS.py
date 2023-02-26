@@ -177,8 +177,6 @@ def pdeparams(pde, mesh, parameters):
                                     parameters["tau_a"],  # 21
                                     parameters["latitude"].value,  # 22
                                     parameters["longitude"].value,  # 23
-                                    parameters["coord"],  # 24 # todo: we might not need this anymore.
-                                    parameters["date"][:4]  # 25 # todo: Jordi, why do we need this?
                                     ])
 
     # store external parameters
@@ -198,7 +196,7 @@ def pdeparams(pde, mesh, parameters):
     pde['linearsolvertol'] = parameters["linear_solver_tol"]  # GMRES tolerance
     pde['linearsolveriter'] = parameters["linear_solver_iter"]  # number of GMRES iterations
     pde['precMatrixType'] = parameters["pre_cond_matrix_type"]  # preconditioning type
-    pde['NLtol'] = 1e-10  # Newton tolerance
+    pde['NLtol'] = 1E-10  # Newton tolerance
     pde['NLiter'] = 2  # Newton iterations
     pde['matvectol'] = 1E-6  # finite difference approach for Jacobian approximation
     pde['RBdim'] = 8  # number of dimensions of reduced basis used to compute the conditioner and
