@@ -171,7 +171,6 @@ def MSIS_initial_condition_1D_pressure(x_dg,
     #  Jordi, could you help me translate this line?
     #  u(:, iu) = [r, srT, drdx, dsrTdx];
     #  can we avoid the transposing in pdeparams and set it up in the current shape here?
-    #results = np.zeros((len(altitude_mesh_grid), number_of_components * (number_of_dimensions + 1)))
     results = np.zeros((len(altitude_mesh_grid), number_of_components * (number_of_dimensions + 1)))
 
     index_results = np.array([1, number_of_components, number_of_components + 1,

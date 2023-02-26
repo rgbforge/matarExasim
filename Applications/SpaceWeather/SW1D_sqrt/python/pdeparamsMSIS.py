@@ -23,13 +23,13 @@ import Preprocessing
 
 
 def pdeparams(pde, mesh, parameters):
-    """ A funcyion to set the model input parameters, mesh, and initial conditions.
+    """ A function to set the model input parameters, mesh and initial conditions from MSIS.
 
     :param pde: contains pde parameters (dict).
     :param mesh: contains mesh grid parameters (dict).
-    :param parameters: contains specified input parameters (dict).
+    :param parameters: contains specified input parameters (dict) defined in pdeapp.py.
 
-    :return: updated pde (dict) , updated mesh (dict).
+    :return: updated pde (dict) & updated mesh (dict).
     """
     # read in F10.7 data
     data = sw.sw_daily(update=True)
@@ -190,17 +190,6 @@ def pdeparams(pde, mesh, parameters):
                                       mass,  # 5
                                       c_kappa_i  # 6
                                       ])
-    # todo: testing!
-    nspecies = 4
-    nWaves = 37
-    Chi = np.ones((4, 101))
-    r = np.linspace(float(pde['physicsparam'][15]), float(pde['physicsparam'][16]), 101)
-    for iSpecies in range(2, nspecies+1):
-        coeffsDensity = pde['externalparam'][(3+nspecies)*nWaves+4*(iSpecies-2):(3+nspecies)*nWaves+4*(iSpecies-1)]
-        Chi[iSpecies-1, :] = coeffsDensity[0]*np.exp(coeffsDensity[1]*(r-float(pde['physicsparam'][15]))*float(pde['physicsparam'][17])) +\
-                             coeffsDensity[2]*np.exp(coeffsDensity[3]*(r-float(pde['physicsparam'][15]))*float(pde['physicsparam'][17]))
-        Chi[0, :] = Chi[0, :] - Chi[iSpecies-1, :]
-
 
     # set solver parameters
     pde['extStab'] = parameters["ext_stab"]
@@ -213,7 +202,7 @@ def pdeparams(pde, mesh, parameters):
     pde['NLiter'] = 2  # Newton iterations
     pde['matvectol'] = 1E-6  # finite difference approach for Jacobian approximation
     pde['RBdim'] = 8  # number of dimensions of reduced basis used to compute the conditioner and
-                      # initialization used for each time step.
+    # initialization used for each time step.
 
     # set computational mesh
     mesh['p'], mesh['t'] = mesh1D_adapted(r1=R0, r2=R1, nx=parameters["resolution"])
@@ -244,8 +233,6 @@ def pdeparams(pde, mesh, parameters):
     n_points_per_element, n_dimensions, n_elements = np.shape(mesh["dgnodes"])
     # get grid points in km
     altitude_mesh_grid = ((mesh["dgnodes"].flatten("F") - R0) * H0 + parameters["altitude_lower"]).to(u.km)
-    # todo: Jordi can you double check that x_dg is a 1d array?
-    #
     u0 = MSIS_initial_condition_1D_pressure(x_dg=mesh["dgnodes"].flatten("F"),
                                             altitude_mesh_grid=altitude_mesh_grid,
                                             parameters=parameters,
@@ -255,9 +242,7 @@ def pdeparams(pde, mesh, parameters):
                                             rho0=rho0,
                                             H0=H0,
                                             Fr=Fr,
-                                            R0=R0,
-                                            number_of_dimensions=n_dimensions,
-                                            number_of_components=n_points_per_element)
+                                            R0=R0)
     # todo:
     #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
     #  Jordi, can you verify this is the correct operation?
@@ -267,7 +252,7 @@ def pdeparams(pde, mesh, parameters):
     udg = np.zeros((n_points_per_element, 6, n_elements))
     for elem in range(n_elements):
         for node in range(n_points_per_element):
-            udg[node, :, elem] = u0[n_points_per_element*elem + node, :]
+            udg[node, :, elem] = u0[n_points_per_element * elem + node, :]
 
     mesh['udg'] = udg
     return pde, mesh

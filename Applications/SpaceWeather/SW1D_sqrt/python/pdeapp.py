@@ -37,7 +37,7 @@ parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "date": "2022-02-02 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 30 * u.s,  # time step (seconds)
+    "t_step": 10 * u.s,  # time step (seconds)
     "t_simulation": 2 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
@@ -69,7 +69,7 @@ parameters = {
     "newton_tol": 1e-10,  # newton iterations
     "mat_vec_tol": 1e-6,  # todo: define
     "rb_dim": 8,  # todo: define
-    "resolution": 25,  # set one-dimensional mesh resolution
+    "resolution": 35,  # set one-dimensional mesh resolution
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
     "F10p7_uncertainty": 10 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty
