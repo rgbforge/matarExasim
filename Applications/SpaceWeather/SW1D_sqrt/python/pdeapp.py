@@ -38,7 +38,7 @@ parameters = {
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     "date": "2022-02-02 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_step": 10 * u.s,  # time step (seconds)
-    "t_simulation": 2 * u.d,  # length of simulation (days)
+    "t_simulation": 4 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611*u.deg,  # longitude coordinates # todo: (These are San Diego coordinates!)
@@ -58,7 +58,7 @@ parameters = {
     "ref_kappa_scale": 0.5,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
     "p_order": 3,  # order of polynomial in solver
-    "t_order": 2,  # grid parameter in solver # todo: understand this better.
+    "t_order": 3,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
     "ext_stab": 1,  # solver parameter # todo: understand this better.
     "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
