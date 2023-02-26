@@ -260,9 +260,6 @@ def gettau(uhat, mu, eta, x, n):
     sr1 = 1 / sr
     T = srT * sr1
 
-    #     vx = srvx*sr1
-    #     c = sqrt(T);
-    #     tauA = sqrt(vx*vx) + c
     tauA = mu[21]
 
     # Viscosity
@@ -338,7 +335,6 @@ def EUVsource1D(u, x, t, mu, eta):
     y = sqrt(Xp / 2) * abs(cosChi)
 
     Ierf = 0.5 * (1 + tanh(1000 * (8 - y)))
-    # todo: should these values be specified in pdeparams?
     # No need to, they don't change, this is a numerical approximation to the error function to guarantee positiveness
     a_erf = 1.06069630
     b_erf = 0.55643831
@@ -460,7 +456,7 @@ def thermalConductivity(x, mu, eta):
             coeffsDensity[3] * (r - R0) * H0)
         Chi[0] = Chi[0] - Chi[iSpecies - 1]
 
-    # todo: switch back!!!!
+    # todo: switch back!!!! Jordi, is this switched back?
     kappa = 0.0
     ckappai = eta[(3 + nspecies) * nWaves + 4 * (nspecies - 1) + nspecies:(3 + nspecies) * nWaves + 4 * (
                 nspecies - 1) + 2 * nspecies]

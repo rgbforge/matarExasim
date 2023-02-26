@@ -1,10 +1,9 @@
 """ Module to call MSIS from Python.
-Latest update: Feb 16th, 2023 [OI]
+Latest update: Feb 25th, 2023 [OI]
 """
 from pymsis import msis
 import numpy as np
 import astropy.units as u
-import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 
 

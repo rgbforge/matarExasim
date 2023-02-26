@@ -7,6 +7,13 @@ from scipy.optimize import fsolve
 
 
 def mesh1D_adapted(r1, r2, nx):
+    """
+
+    :param r1:
+    :param r2:
+    :param nx:
+    :return:
+    """
     dlay = 1
     dwall = 5e-3
 
