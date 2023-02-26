@@ -57,7 +57,7 @@ parameters = {
     "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 0.5,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
-    "p_order": 2,  # order of polynomial in solver
+    "p_order": 3,  # order of polynomial in solver
     "t_order": 2,  # grid parameter in solver # todo: understand this better.
     "n_stage": 2,  # grid parameter in solver # todo: understand this better.
     "ext_stab": 1,  # solver parameter # todo: understand this better.
@@ -69,7 +69,7 @@ parameters = {
     "newton_tol": 1e-10,  # newton iterations
     "mat_vec_tol": 1e-6,  # todo: define
     "rb_dim": 8,  # todo: define
-    "resolution": 16,  # set one-dimensional mesh resolution
+    "resolution": 25,  # set one-dimensional mesh resolution
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
     "F10p7_uncertainty": 10 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty
@@ -93,18 +93,18 @@ pde = Gencode.setcompilers(pde)
 # generate input files and store them in datain folder
 pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
 
-# # generate source codes and store them in app folder
+# generate source codes and store them in app folder
 # this is only when you change the pdemodel file. so we do not need this anymore.
-# Gencode.gencode(pde)
-#
-# # compile source codes to build an executable file and store it in app folder
-# compilerstr = Gencode.compilecode(pde)
-#
-# # run source code and save solution in dataout folder.
-# runstr = Gencode.runcode(pde, 1)
-#
-# # save time it took to run in sec.
-# np.savetxt("time.txt", np.array([time.time() - start_time]))
+Gencode.gencode(pde)
+
+# compile source codes to build an executable file and store it in app folder
+compilerstr = Gencode.compilecode(pde)
+
+# run source code and save solution in dataout folder.
+runstr = Gencode.runcode(pde, 1)
+
+# save time it took to run in sec.
+np.savetxt("time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 # solution dimensions: 3 (s1) x 6 (s2) x 16 (s3) x 95 (s4)
