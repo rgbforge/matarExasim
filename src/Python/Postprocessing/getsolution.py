@@ -11,7 +11,7 @@ def getsolution(filename,dmd,npe):
         UDG = reshape(UDG,[npe,nc,ne],'F');
     else:
         nei = zeros(nproc).astype(int);
-        for i in range (0,nproc):
+        for i in range(0,nproc):
             nei[i] = sum(dmd[i]['elempartpts'][0:2]);
         ne = sum(nei);
 

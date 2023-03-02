@@ -5,7 +5,7 @@ def masternodes(porder,dim,elemtype):
 
     d0 = os.getcwd();
     ii = d0.find("Exasim");
-    fn = d0[0:ii] + "Exasim/src/python/Preprocessing/masternodes.bin";
+    fn = d0[0:ii] + "Exasim/src/Python/Preprocessing/masternodes.bin";
     tmp = numpy.fromfile(open(fn, "r"), dtype=numpy.float64);
 
     ndims = numpy.int_(tmp[0]);
@@ -49,7 +49,7 @@ def masternodes(porder,dim,elemtype):
     i = 4;
     m1 = k2 + lz1[i,e,pm1,dm1];
     m2 = m1 + lz2[i,e,pm1,dm1]-lz1[i,e,pm1,dm1];
-    perm  = numpy.reshape(tmp[m1:m2],[sz1[i,e,pm1,dm1],sz2[i,e,pm1,dm1]],order='F');
+    perm = numpy.reshape(tmp[m1:m2],[sz1[i,e,pm1,dm1],sz2[i,e,pm1,dm1]],order='F');
 
     telem = numpy.int_(telem);
     tface = numpy.int_(tface);

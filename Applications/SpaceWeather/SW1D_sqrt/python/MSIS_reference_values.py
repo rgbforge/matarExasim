@@ -1,5 +1,5 @@
 """ Module to call MSIS from Python.
-Latest update: Feb 25th, 2023 [OI]
+Latest update: March 2nd, 2023 [OI]
 """
 from pymsis import msis
 import numpy as np

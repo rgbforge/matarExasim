@@ -1,5 +1,5 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Jan 17th, 2022. [OI]
+Latest update: Feb 26th, 2022. [OI]
 """
 # import external modules
 import os
@@ -7,8 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.constants import R_earth
 import astropy.units as u
-from Applications.SpaceWeather.SW1D_sqrt.python.pdeparamsMSIS import pdeparams
+from pdeparamsMSIS import pdeparams
 import time
+import shutil
+import copy, sys
 
 # start timer
 start_time = time.time()
@@ -17,12 +19,28 @@ start_time = time.time()
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
 exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
+sys.path.append(cdir[:(ii + 6)] + "/src/Python/Preprocessing/")
+from initializeexasim import initializeexasim
+from Preprocessing import preprocessing
+sys.path.append(cdir[:(ii + 6)] + "/src/Python/Gencode/")
+from compilecode import compilecode
+from Gencode import gencode
+from setcompilers import setcompilers
+from runcode import runcode
+sys.path.append(cdir[:(ii + 6)] + "/src/Python/Postprocessing/")
+from fetchsolution import fetchsolution
 
-# import internal modules
-import Preprocessing, Postprocessing, Gencode
+#
+# # import internal modules
+# import Preprocessing, Postprocessing, Gencode
+
+os.chdir('../')
 
 # Create pde object and mesh object
-pde, mesh = Preprocessing.initializeexasim()
+pde, mesh = initializeexasim()
+
+# fidelity
+fidelity = "f0"
 
 # Define a PDE model: governing equations and boundary conditions
 pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
@@ -36,20 +54,21 @@ pde['mpiprocs'] = 1  # number of MPI processors
 parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
-    "date": "2022-02-02 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 10 * u.s,  # time step (seconds)
+    # date formatting: year-month-day hr-min-sec
+    "date": "2022-02-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "t_step": 2 * u.s,  # time step (seconds)
     "t_simulation": 4 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
-    "longitude": -117.1611*u.deg,  # longitude coordinates # todo: (These are San Diego coordinates!)
-    "latitude": 32.7157*u.deg,  # latitude coordinates
-    "euv_efficiency": 0.3,  # EUV efficiency # todo: what are the units?
+    "longitude": -117.1611*u.deg,  # longitude coordinates (These are San Diego coordinates!)
+    "latitude": 32.7157*u.deg,  # latitude coordinates (These are San Diego coordinates!)
+    "euv_efficiency": 0.3,  # EUV efficiency
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
-    "EUV_input_file_directory": "inputs/euv.csv",  # EUV input file location
-    "orbits_input_file_directory": "inputs/orbits.csv",  # orbits input file location
-    "neutrals_input_file_directory": "inputs/neutrals.csv",  # neutrals input file location
+    "EUV_input_file_directory": str(os.getcwd()) + "/inputs/euv.csv",  # EUV input file location
+    "orbits_input_file_directory": str(os.getcwd()) + "/inputs/orbits.csv",  # orbits input file location
+    "neutrals_input_file_directory": str(os.getcwd()) + "/inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
     "exp_mu": 0.5,  # exponential of reference mu
     "exp_kappa": 0.69,  # exponential of reference kappa
@@ -58,8 +77,9 @@ parameters = {
     "ref_kappa_scale": 0.5,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
     "p_order": 3,  # order of polynomial in solver
-    "t_order": 3,  # grid parameter in solver # todo: understand this better.
-    "n_stage": 2,  # grid parameter in solver # todo: understand this better.
+    "t_order": 3,  # Runge-Kutta integrator order.
+    "n_stage": 3,  # Runge-Kutta number of stages order.
+    "resolution": 50,  # set one-dimensional mesh resolution
     "ext_stab": 1,  # solver parameter # todo: understand this better.
     "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
@@ -69,11 +89,10 @@ parameters = {
     "newton_tol": 1e-10,  # newton iterations
     "mat_vec_tol": 1e-6,  # todo: define
     "rb_dim": 8,  # todo: define
-    "resolution": 35,  # set one-dimensional mesh resolution
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
-    "F10p7_uncertainty": 10 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
+    "F10p7_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty
-    "F10p7-81_uncertainty": 1 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
+    "F10p7-81_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
     "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
     "nu_eddy": 20,  # eddy viscosity
@@ -88,23 +107,32 @@ parameters = {
 pde, mesh = pdeparams(pde=pde, mesh=mesh, parameters=parameters)
 
 # search compilers and set options
-pde = Gencode.setcompilers(pde)
+pde = setcompilers(pde)
 
 # generate input files and store them in datain folder
-pde, mesh, master, dmd = Preprocessing.preprocessing(pde, mesh)
+pde, mesh, master, dmd = preprocessing(pde, mesh)
+
+# save model setup.
+np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/pde", pde)
+mesh_copy = copy.deepcopy(mesh)
+mesh_copy["boundaryexpr"] = None
+np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/mesh", mesh_copy)
+np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/master", master)
+np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/dmd", dmd)
+np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/parameters", parameters)
 
 # generate source codes and store them in app folder
 # this is only when you change the pdemodel file. so we do not need this anymore.
-Gencode.gencode(pde)
+gencode(pde)
 
 # compile source codes to build an executable file and store it in app folder
-compilerstr = Gencode.compilecode(pde)
+compilerstr = compilecode(pde)
 
 # run source code and save solution in dataout folder.
-runstr = Gencode.runcode(pde, 1)
+runstr = runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt("time.txt", np.array([time.time() - start_time]))
+np.savetxt(os.getcwd() + "/solutions/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 # solution dimensions: 3 (s1) x 6 (s2) x 16 (s3) x 95 (s4)
@@ -113,7 +141,21 @@ np.savetxt("time.txt", np.array([time.time() - start_time]))
 # log(rho), sqrt(rho)*v, sqrt(rho)*T, and their corresponding derivatives (d·/dx)
 # s3 -> number of elements of the grid
 # s4 -> number of discretization points per element
-sol = Postprocessing.fetchsolution(pde, master, dmd, cdir + "/dataout")
+sol = fetchsolution(pde, master, dmd, os.getcwd() + "/dataout")
+
+
+# copy all ouput files
+source_folder = os.path.dirname(cdir) + "/dataout/"
+destination_folder = os.path.dirname(cdir) + "/solutions/f0/dataout/"
+
+# fetch all files
+for file_name in os.listdir(source_folder):
+    print(file_name)
+    # construct full file path
+    source = source_folder + file_name
+    destination = destination_folder + file_name
+    # copy files.
+    shutil.copy(source, destination)
 
 # get parameters
 rho0 = pde["physicsparam"][19]
@@ -122,11 +164,13 @@ T0 = pde["physicsparam"][18]
 
 fig, ax = plt.subplots(nrows=3, sharex=True, figsize=(7, 7))
 index = -1
-
+# convert results to density, radial velocity, and temperature.
 rho = np.exp(sol[:, 0, :, index]).flatten("F")
 vr = sol[:, 1, :, index].flatten("F") / np.sqrt(rho)
 T = (sol[:, 2, :, index].flatten("F") / np.sqrt(rho))
+# computational grid.
 computational_grid = mesh["dgnodes"].flatten("F")
+# computational grid in km.
 phys_grid = ((computational_grid * float(H0) - R_earth.value) * u.m).to(u.km)
 
 ax[0].plot(phys_grid, rho*float(rho0))
@@ -142,8 +186,7 @@ ax[2].set_xticks([100, 200, 300, 400, 500, 600])
 ax[2].set_xlim(100, 600)
 ax[0].set_yscale("log")
 plt.tight_layout()
-plt.savefig("figs/GITM_1D_results.png", dpi=600)
-#plt.show()
+plt.savefig(os.getcwd() + "/figs/GITM_1D_results_" + str(fidelity) + ".png", dpi=600)
 
 
 fig, ax = plt.subplots(nrows=3, sharex=True, figsize=(10, 5))
@@ -172,5 +215,5 @@ ax[0].set_ylabel("Altitude")
 ax[1].set_ylabel("Altitude")
 ax[2].set_ylabel("Altitude")
 plt.tight_layout()
-plt.savefig("figs/GITM_1D_results_time_dependent.png", dpi=600)
+plt.savefig(os.getcwd() + "/figs/GITM_1D_results_time_dependent_" + str(fidelity) + ".png", dpi=600)
 plt.show()

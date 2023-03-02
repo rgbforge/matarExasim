@@ -4,7 +4,7 @@ import subprocess
 
 version = "src";
 cdir = os.getcwd(); ii = cdir.find("Exasim");
-versiondir = cdir[0:(ii+6)] + "/"  + version + "/python";
+versiondir = cdir[0:(ii+6)] + "/"  + version + "/Python";
 
 #sys.path.append(cdir[0:(ii+6)] + "/Installation");
 from findinstallexec import findinstallexec
@@ -73,7 +73,7 @@ else:
     print("Installing " +  "lapack" +  " via apt.");
     os.system("sudo apt install liblapack-dev");
 
-filem = versiondir +  "/Preprocessing/initializepde.py";
+filem = versiondir + "/Preprocessing/initializepde.py";
 fid = open(filem, "r");
 text = fid.read();
 fid.close();

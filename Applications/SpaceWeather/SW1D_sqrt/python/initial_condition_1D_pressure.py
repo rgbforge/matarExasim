@@ -1,10 +1,10 @@
 """Module to initialize the pressure profile using MSIS.
-Latest update: Jan 30th, 2023 [OI]
+Latest update: March 2nd, 2023 [OI]
 """
 import numpy as np
 from pymsis import msis
 import astropy.units as u
-from Applications.SpaceWeather.SW1D_sqrt.python.MSIS_reference_values import get_MSIS_species
+from MSIS_reference_values import get_MSIS_species
 
 
 def MSIS_initial_condition_1D_pressure(x_dg,
@@ -178,6 +178,6 @@ def MSIS_initial_condition_1D_pressure(x_dg,
 
     results[:, index_results] = np.array([log_rho.value,  # log(rho)
                                           sqrt_rho_temperature.value,  # sqrt(rho) * T
-                                          central_log_rho.value,   # dr/dx
-                                          central_sqrt_rho_temperature.value]).T   # d(sqrt(rho) * T)/dx
+                                          central_log_rho.value,  # dr/dx
+                                          central_sqrt_rho_temperature.value]).T  # d(sqrt(rho) * T)/dx
     return results

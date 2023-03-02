@@ -2,7 +2,7 @@ import sys, os
 
 # Add Exasim to python search path
 src = "src"; 
-srcdir = cdir[0:(ii+6)] + "/"  + src + "/python";
+srcdir = cdir[0:(ii+6)] + "/"  + src + "/Python";
 sys.path.append(cdir[0:(ii+6)] + '/Installation');
 sys.path.append(srcdir + '/Gencode');
 sys.path.append(srcdir + '/Mesh');

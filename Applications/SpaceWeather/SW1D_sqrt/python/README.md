@@ -8,4 +8,4 @@ Python implementation of 1D-GITM initialized with MSIS results.
 4. [scipy >= 1.7.1](https://www.scipy.org/install.html)
 5  [heliopy >= 0.15.4](https://docs.heliopy.org/en/stable/index.html)
 5. [spaceweather >= 0.2.1](https://pyspaceweather.readthedocs.io/en/latest/)
-6. 
+6. [sympy >= 1.11.1](https://www.sympy.org/en/download.html)

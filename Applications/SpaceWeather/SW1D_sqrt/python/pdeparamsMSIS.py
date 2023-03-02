@@ -1,25 +1,24 @@
 """ Module to define the model input parameters driven by solar conditions.
 Latest update: Feb 25th, 2023 [OI]
 """
-
 import numpy as np
 from pandas import read_csv
-import matplotlib.pyplot as plt
-from Applications.SpaceWeather.SW1D_sqrt.python.mesh_1D_adapted import mesh1D_adapted
-from Applications.SpaceWeather.SW1D_sqrt.python.MSIS_reference_values import MSIS_reference_values
-from Applications.SpaceWeather.SW1D_sqrt.python.initial_condition_1D_pressure import MSIS_initial_condition_1D_pressure
+from mesh_1D_adapted import mesh1D_adapted
+from MSIS_reference_values import MSIS_reference_values
+from initial_condition_1D_pressure import MSIS_initial_condition_1D_pressure
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
 import astropy.units as u
 import spaceweather as sw
+import os, sys
 from datetime import date
-import os
 
 # import internal modules
 # Add Exasim package to python search path
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
-exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
-import Preprocessing
+# exec(open(cdir[:(ii + 6)] + "/Installation/setpath.py").read())
+sys.path.append(cdir[:(ii + 6)] + "/src/Python/Preprocessing/")
+from createdgnodes import createdgnodes
 
 
 def pdeparams(pde, mesh, parameters):
@@ -144,7 +143,7 @@ def pdeparams(pde, mesh, parameters):
     # set discretization parameters, physical parameters, and solver parameters
     pde['porder'] = parameters["p_order"]  # polynomial degree
     pde['torder'] = parameters["t_order"]  # time-stepping order of accuracy
-    pde['nstage'] = parameters["p_order"]  # time-stepping number of stages
+    pde['nstage'] = parameters["n_stage"]  # time-stepping number of stages
     pde['dt'] = t_step_star.value * np.ones([int(n_time_steps.value), 1])  # time step sizes
     pde['visdt'] = pde['dt'][0]  # visualization timestep size
     pde['saveSolFreq'] = freq_time_steps  # solution is saved every 100 time steps
@@ -214,12 +213,12 @@ def pdeparams(pde, mesh, parameters):
     # (1) n_points_per_element: the number of nodal points (in 1D: p+1),
     # (2) n_dimensions: 1 because we are in 1D
     # (3) n_elements is the ones that you have set.
-    mesh["dgnodes"] = Preprocessing.createdgnodes(mesh["p"],
-                                                  mesh["t"],
-                                                  mesh["f"],
-                                                  mesh["curvedboundary"],
-                                                  mesh["curvedboundaryexpr"],
-                                                  pde["porder"])
+    mesh["dgnodes"] = createdgnodes(mesh["p"],
+                                    mesh["t"],
+                                    mesh["f"],
+                                    mesh["curvedboundary"],
+                                    mesh["curvedboundaryexpr"],
+                                    pde["porder"])
 
     # todo: initial condition (Jordi, we should discuss how to implement this).
     #  [s1, s2, s3] = size(mesh.dgnodes);
