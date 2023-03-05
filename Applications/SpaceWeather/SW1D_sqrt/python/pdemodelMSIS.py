@@ -72,7 +72,7 @@ def source(u, q, w, v, x, t, mu, eta):
     ar = -gravity + x1 * Fr ** 2 / gam
 
     trp = 2 * c23 * nu * mw * (dvxdx ** 2 - 2 * vx * dvxdx / x1 + vx ** 2 / x1 ** 2)
-    SigmadV = gam * gam1 * trp;
+    SigmadV = gam * gam1 * trp
 
     q_EUV = EUVsource1D(u, x, t, mu, eta)
 
@@ -252,7 +252,6 @@ def gettau(uhat, mu, eta, x, n):
     mw, dmdr = weightedMass(x, mu, eta)
 
     r = uhat[0]
-    srvx = uhat[1]
     srT = uhat[2]
 
     rho = exp(r)
@@ -335,7 +334,6 @@ def EUVsource1D(u, x, t, mu, eta):
     y = sqrt(Xp / 2) * abs(cosChi)
 
     Ierf = 0.5 * (1 + tanh(1000 * (8 - y)))
-    # No need to, they don't change, this is a numerical approximation to the error function to guarantee positiveness
     a_erf = 1.06069630
     b_erf = 0.55643831
     c_erf = 1.06198960
@@ -462,5 +460,4 @@ def thermalConductivity(x, mu, eta):
                 nspecies - 1) + 2 * nspecies]
     for iSpecies in range(0, nspecies):
         kappa = kappa + ckappai[iSpecies] * Chi[iSpecies]
-
     return kappa

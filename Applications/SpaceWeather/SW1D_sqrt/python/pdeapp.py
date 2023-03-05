@@ -1,5 +1,6 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
-Latest update: Feb 26th, 2022. [OI]
+
+Latest update: March 2nd, 2022. [OI]
 """
 # import external modules
 import os
@@ -9,16 +10,12 @@ from astropy.constants import R_earth
 import astropy.units as u
 from pdeparamsMSIS import pdeparams
 import time
-import shutil
-import copy, sys
+import copy
+import sys
 
-# start timer
-start_time = time.time()
-
-# Add Exasim package to python search path
+# Add Exasim package to python search path & others
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
-exec(open(cdir[0:(ii + 6)] + "/Installation/setpath.py").read())
 sys.path.append(cdir[:(ii + 6)] + "/src/Python/Preprocessing/")
 from initializeexasim import initializeexasim
 from Preprocessing import preprocessing
@@ -30,17 +27,17 @@ from runcode import runcode
 sys.path.append(cdir[:(ii + 6)] + "/src/Python/Postprocessing/")
 from fetchsolution import fetchsolution
 
-#
-# # import internal modules
-# import Preprocessing, Postprocessing, Gencode
-
+# save everything outside of dir.
 os.chdir('../')
+
+# start timer
+start_time = time.time()
 
 # Create pde object and mesh object
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f0"
+fidelity = "f2"
 
 # Define a PDE model: governing equations and boundary conditions
 pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
@@ -55,8 +52,8 @@ parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     # date formatting: year-month-day hr-min-sec
-    "date": "2022-02-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 2 * u.s,  # time step (seconds)
+    "date": "2008-10-21 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "t_step": 1 * u.s,  # time step (seconds)
     "t_simulation": 4 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
@@ -79,7 +76,7 @@ parameters = {
     "p_order": 3,  # order of polynomial in solver
     "t_order": 3,  # Runge-Kutta integrator order.
     "n_stage": 3,  # Runge-Kutta number of stages order.
-    "resolution": 50,  # set one-dimensional mesh resolution
+    "resolution": 30,  # set one-dimensional mesh resolution
     "ext_stab": 1,  # solver parameter # todo: understand this better.
     "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
@@ -113,13 +110,13 @@ pde = setcompilers(pde)
 pde, mesh, master, dmd = preprocessing(pde, mesh)
 
 # save model setup.
-np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/pde", pde)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/pde", pde)
 mesh_copy = copy.deepcopy(mesh)
 mesh_copy["boundaryexpr"] = None
-np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/mesh", mesh_copy)
-np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/master", master)
-np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/dmd", dmd)
-np.save(os.path.dirname(cdir) + "/solutions/" + str(fidelity) + "/parameters", parameters)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/mesh", mesh_copy)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/master", master)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/dmd", dmd)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/parameters", parameters)
 
 # generate source codes and store them in app folder
 # this is only when you change the pdemodel file. so we do not need this anymore.
@@ -132,30 +129,30 @@ compilerstr = compilecode(pde)
 runstr = runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt(os.getcwd() + "/solutions/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
+np.savetxt(os.getcwd() + "/solutions_CHAMP_2008/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
-# solution dimensions: 3 (s1) x 6 (s2) x 16 (s3) x 95 (s4)
-# s1 -> number of discretization points per element
-# s2 -< number of components of your solution :
+# solution dimensions: (s1) x (s2) x (s3) x  (s4)
+# s1 => number of discretization points per element
+# s2 => number of components of your solution :
 # log(rho), sqrt(rho)*v, sqrt(rho)*T, and their corresponding derivatives (d·/dx)
-# s3 -> number of elements of the grid
-# s4 -> number of discretization points per element
+# s3 => number of elements of the grid (resolution)
+# s4 => number of saved time steps.
 sol = fetchsolution(pde, master, dmd, os.getcwd() + "/dataout")
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/sol.npy", sol)
 
-
-# copy all ouput files
-source_folder = os.path.dirname(cdir) + "/dataout/"
-destination_folder = os.path.dirname(cdir) + "/solutions/f0/dataout/"
-
-# fetch all files
-for file_name in os.listdir(source_folder):
-    print(file_name)
-    # construct full file path
-    source = source_folder + file_name
-    destination = destination_folder + file_name
-    # copy files.
-    shutil.copy(source, destination)
+# # copy all ouput files
+# source_folder = os.path.dirname(cdir) + "/dataout/"
+# destination_folder = os.path.dirname(cdir) + "/solutions_CHAMP_2001/" + str(fidelity) + "/dataout/"
+#
+# # fetch all files
+# for file_name in os.listdir(source_folder):
+#     print(file_name)
+#     # construct full file path
+#     source = source_folder + file_name
+#     destination = destination_folder + file_name
+#     # copy files.
+#     shutil.copy(source, destination)
 
 # get parameters
 rho0 = pde["physicsparam"][19]

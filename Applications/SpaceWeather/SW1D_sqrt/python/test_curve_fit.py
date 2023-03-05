@@ -15,7 +15,7 @@ matplotlib.rc('ytick', labelsize=13)
 
 # specify model input parameters for summer solstice.
 parameters = {
-    "date": "2022-02-01 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "date": "2008-10-22 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611 * u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
     "latitude": 32.7157 * u.deg,  # latitude coordinates

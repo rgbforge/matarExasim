@@ -9,14 +9,14 @@ from initial_condition_1D_pressure import MSIS_initial_condition_1D_pressure
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
 import astropy.units as u
 import spaceweather as sw
-import os, sys
+import os
+import sys
 from datetime import date
 
 # import internal modules
 # Add Exasim package to python search path
 cdir = os.getcwd()
 ii = cdir.find("Exasim")
-# exec(open(cdir[:(ii + 6)] + "/Installation/setpath.py").read())
 sys.path.append(cdir[:(ii + 6)] + "/src/Python/Preprocessing/")
 from createdgnodes import createdgnodes
 

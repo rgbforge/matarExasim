@@ -15,7 +15,7 @@ pde[1]['porder'] = 3;         # polynomial degree
 pde[1]['physicsparam'] = numpy.array([1.0]);   # unit thermal conductivity
 pde[1]['tau'] = numpy.array([1.0]);            # DG stabilization parameter
 
-# set indices to obtain v from the solutions of the other PDE models 
+# set indices to obtain v from the solutions_swarm_2022 of the other PDE models
 # first column : model index
 # second column: solution index
 pde[1]['vindx'] = numpy.array([[1, 1]]);

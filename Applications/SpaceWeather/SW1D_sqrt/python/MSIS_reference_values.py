@@ -96,6 +96,7 @@ def coefficient_fit(altitude_lower, altitude_mesh, data, species):
     """
     if species == "N2":
         weights = np.arange(len(altitude_mesh))[::-1]
+        # weights = np.ones(len(altitude_mesh))
         p0 = np.array([355, -1.33e-5, -355, -1.33e-5])
 
     elif species == "O2":
