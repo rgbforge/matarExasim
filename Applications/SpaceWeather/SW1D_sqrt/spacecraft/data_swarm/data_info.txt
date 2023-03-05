@@ -1,0 +1,11 @@
+# Column  1:         Date (yyyy-mm-dd)
+# Column  2:         Time (hh:mm:ss.sss)
+# Column  3:         Time system: UTC or GPS (differs per mission)
+# Column  4:  f10.3  Altitude (m), GRS80
+# Column  5:  f13.8  Geodetic longitude (deg), GRS80
+# Column  6:  f13.8  Geodetic latitude (deg), GRS80
+# Column  7:   f6.3  Local solar time (h)
+# Column  8:  f13.8  Argument of latitude (deg)
+# Column  9:  e15.8  Density derived from GPS accelerations (kg/m3)
+# Fortran style format string: (a27,1x,f10.3,1X,f13.8,1X,f13.8,1X,f6.3,1X,f13.8,1X,e15.8)
+# (yyyy-mm-dd)          time-system   m          deg           deg           h      deg           kg/m3 

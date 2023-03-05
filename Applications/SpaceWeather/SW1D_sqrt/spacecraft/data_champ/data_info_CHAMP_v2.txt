@@ -1,0 +1,14 @@
+# Column  1:         Date (yyyy-mm-dd)
+# Column  2:         Time (hh:mm:ss.sss)
+# Column  3:         Time system
+# Column  4:  f10.3  CH_TOLEOS_V1/Orbit_Geo - Altitude (m)
+# Column  5:  f13.8  CH_TOLEOS_V1/Orbit_Geo - Geodetic longitude (deg)
+# Column  6:  f13.8  CH_TOLEOS_V1/Orbit_Geo - Geodetic latitude (deg)
+# Column  7:   f6.3  CH_TOLEOS_V1/Orbit_Geo - Local solar time (h)
+# Column  8:  f13.8  CH_TOLEOS_V1/Orbit_Geo - Argument of latitude (deg)
+# Column  9:  e15.8  CH_TOLEOS_V1/Density_Direct_Ray_Tracing - Density from the X-component of the acceleration (kg/m3)
+# Column 10:  e15.8  CH_TOLEOS_V1/Density_Direct_Ray_Tracing_Orbit_Mean - Running orbit average of density (kg/m3)
+# Column 11:   f4.1  CH_TOLEOS_V1/DensityDataFlagsFinal - Flag: 0 = nominal data, 1 = anomalous data (-)
+# Column 12:   f4.1  CH_TOLEOS_V1/DensityOrbitMeanDataFlagsFinal - Flag: 0 = nominal data, 1 = anomalous data (-)
+# Format string: (a27,1x,f10.3,1X,f13.8,1X,f13.8,1X,f6.3,1X,f13.8,1X,e15.8,1X,e15.8,1X,f4.1,1X,f4.1)
+#                           m          deg           deg           h      deg           kg/m3           kg/m3           -    -   
