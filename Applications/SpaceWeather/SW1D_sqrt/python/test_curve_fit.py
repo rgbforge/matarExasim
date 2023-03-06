@@ -15,7 +15,7 @@ matplotlib.rc('ytick', labelsize=13)
 
 # specify model input parameters for summer solstice.
 parameters = {
-    "date": "2008-10-22 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "date": "2008-10-21 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": -117.1611 * u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
     "latitude": 32.7157 * u.deg,  # latitude coordinates
@@ -73,11 +73,11 @@ for ii in range(1, 4):
 
     # plot
     ax.plot(chi[:, ii], altitude_mesh, c=c, label=label + str(" model"))
-    ax.scatter(model, altitude_mesh, c=c, s=2, label=label + str(" data"))
+    ax.scatter(model, altitude_mesh, c=c, s=20, label=label + str(" data"))
 
 l2_error[0] = np.linalg.norm(atomic_oxygen - chi[:, 0], ord=2)
 ax.plot(chi[:, 0], altitude_mesh, c="r", label="O model")
-ax.scatter(atomic_oxygen, altitude_mesh, c="r", s=2, label="O data")
+ax.scatter(atomic_oxygen, altitude_mesh, c="r", s=20, label="O data")
 
 ax.legend()
 ax.set_xlim(0, 1)

@@ -37,7 +37,7 @@ start_time = time.time()
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f2"
+fidelity = "f5"
 
 # Define a PDE model: governing equations and boundary conditions
 pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
@@ -53,7 +53,7 @@ parameters = {
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     # date formatting: year-month-day hr-min-sec
     "date": "2008-10-21 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 1 * u.s,  # time step (seconds)
+    "t_step": 10 * u.s,  # time step (seconds)
     "t_simulation": 4 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
@@ -73,19 +73,20 @@ parameters = {
     "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 0.5,  # multiply the reference value of the thermal conductivity by this value
     "ref_rho_scale": 1,  # multiply the reference value of the density by this value
-    "p_order": 3,  # order of polynomial in solver
-    "t_order": 3,  # Runge-Kutta integrator order.
-    "n_stage": 3,  # Runge-Kutta number of stages order.
-    "resolution": 30,  # set one-dimensional mesh resolution
+    "p_order": 1,  # order of polynomial in solver
+    "t_order": 1,  # Runge-Kutta integrator order.
+    "n_stage": 1,  # Runge-Kutta number of stages order.
+    "resolution": 20,  # set one-dimensional mesh resolution
     "ext_stab": 1,  # solver parameter # todo: understand this better.
     "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
     "linear_solver_tol": 1e-16,  # GMRES (linear solver) solver tolerance
-    "linear_solver_iter": 30,  # GMRES (linear solver) solver iterations
+    "linear_solver_iter": 40,  # GMRES (linear solver) solver iterations
     "pre_cond_matrix_type": 2,  # preconditioning type
-    "newton_tol": 1e-10,  # newton iterations
+    "newton_tol": 1e-10,  # newton tolerance
+    "newton_iter": 2,  # newton iterations
     "mat_vec_tol": 1e-6,  # todo: define
-    "rb_dim": 8,  # todo: define
+    "rb_dim": 10,  # todo: define
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
     "F10p7_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty

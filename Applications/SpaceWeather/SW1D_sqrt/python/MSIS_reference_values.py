@@ -5,6 +5,7 @@ from pymsis import msis
 import numpy as np
 import astropy.units as u
 from scipy.optimize import leastsq
+import matplotlib.pyplot as plt
 
 
 def get_MSIS_species(MSIS_output, parameters):
@@ -60,7 +61,7 @@ def exp_model(altitude_mesh, a1, a2, a3, a4, altitude_low_boundary):
            a3 * np.exp(a4 * (altitude_mesh - altitude_low_boundary))
 
 
-def minimize_func(theta, altitude_low_boundary, altitude_mesh, data, weights):
+def minimize_func(theta, altitude_low_boundary, altitude_mesh, data, weights, flag):
     """ loss function for nonlinear least squares minimization.
 
     :param theta: list of parameters [a1, a2, a3, a4]
@@ -73,7 +74,13 @@ def minimize_func(theta, altitude_low_boundary, altitude_mesh, data, weights):
     a1, a2, a3, a4 = theta
     model_eval = exp_model(altitude_mesh=altitude_mesh, a1=a1, a2=a2, a3=a3, a4=a4,
                            altitude_low_boundary=altitude_low_boundary)
-    return (model_eval - data) * weights
+    if flag:
+        if np.min(model_eval) < 0:
+            return 1E3 * (model_eval - data) * weights
+        else:
+            return (model_eval - data) * weights
+    else:
+        return (model_eval - data) * weights
 
 
 def coefficient_fit(altitude_lower, altitude_mesh, data, species):
@@ -98,14 +105,17 @@ def coefficient_fit(altitude_lower, altitude_mesh, data, species):
         weights = np.arange(len(altitude_mesh))[::-1]
         # weights = np.ones(len(altitude_mesh))
         p0 = np.array([355, -1.33e-5, -355, -1.33e-5])
+        flag = False
 
     elif species == "O2":
         weights = np.ones(len(altitude_mesh))
         p0 = np.array([9.6e-2, -1e-5, 0.1, -5e-5])
+        flag = False
 
     elif species == "He":
         weights = np.ones(len(altitude_mesh))
         p0 = np.array([5e-5, 1e-5, 3e-4, 1e-5])
+        flag = True
 
     else:
         weights = np.ones(len(altitude_mesh))
@@ -114,9 +124,9 @@ def coefficient_fit(altitude_lower, altitude_mesh, data, species):
     minimization_results = leastsq(func=minimize_func,
                                    x0=p0,
                                    full_output=True,
-                                   args=(altitude_lower.to(u.m).value, altitude_mesh.to(u.m).value, data, weights),
+                                   args=(altitude_lower.to(u.m).value, altitude_mesh.to(u.m).value, data, weights, flag),
                                    ftol=1e-11,
-                                   maxfev=int(1e8))
+                                   maxfev=int(1e9))
     return minimization_results[0]
 
 

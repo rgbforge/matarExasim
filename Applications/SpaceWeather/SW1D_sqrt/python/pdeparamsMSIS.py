@@ -146,7 +146,7 @@ def pdeparams(pde, mesh, parameters):
     pde['nstage'] = parameters["n_stage"]  # time-stepping number of stages
     pde['dt'] = t_step_star.value * np.ones([int(n_time_steps.value), 1])  # time step sizes
     pde['visdt'] = pde['dt'][0]  # visualization timestep size
-    pde['saveSolFreq'] = freq_time_steps  # solution is saved every 100 time steps
+    pde['saveSolFreq'] = freq_time_steps  # solution is saved every parameters["frequency_save"]
     # steps at which solution are collected
     pde['soltime'] = np.arange(freq_time_steps.value, pde['dt'].shape[0], freq_time_steps)
     pde['timestepOffset'] = parameters["t_restart"]  # restart parameter
@@ -195,10 +195,10 @@ def pdeparams(pde, mesh, parameters):
     pde['linearsolvertol'] = parameters["linear_solver_tol"]  # GMRES tolerance
     pde['linearsolveriter'] = parameters["linear_solver_iter"]  # number of GMRES iterations
     pde['precMatrixType'] = parameters["pre_cond_matrix_type"]  # preconditioning type
-    pde['NLtol'] = 1E-10  # Newton tolerance
-    pde['NLiter'] = 2  # Newton iterations
-    pde['matvectol'] = 1E-6  # finite difference approach for Jacobian approximation
-    pde['RBdim'] = 8  # number of dimensions of reduced basis used to compute the conditioner and
+    pde['NLtol'] = parameters["newton_tol"]  # Newton tolerance
+    pde['NLiter'] = parameters["newton_iter"]  # Newton iterations
+    pde['matvectol'] = parameters["mat_vec_tol"]  # finite difference approach for Jacobian approximation
+    pde['RBdim'] = parameters["rb_dim"]  # number of dimensions of reduced basis used to compute the conditioner and
     # initialization used for each time step.
 
     # set computational mesh
@@ -242,9 +242,9 @@ def pdeparams(pde, mesh, parameters):
                                             R0=R0)
     # todo:
     #  mesh.udg = pagetranspose(reshape(u0',[nc,s1,s3]));
-    #  Jordi, can you verify this is the correct operation?
-    #  can we avoid the transposing and directly provide the right ordering from u0?
-    #   48 x 6 ---> transpose ---> 6 x 3 x 16 -----> transpose -----> 3 x 6 x 16 result.
+    #   Jordi, can you verify this is the correct operation?
+    #   can we avoid the transposing and directly provide the right ordering from u0?
+    #   [48 x 6] ---> transpose ---> [6 x 3 x 16] -----> transpose -----> [3 x 6 x 16] result.
     #   need to test this.
     udg = np.zeros((n_points_per_element, 6, n_elements))
     for elem in range(n_elements):
