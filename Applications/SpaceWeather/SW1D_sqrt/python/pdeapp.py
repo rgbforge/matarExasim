@@ -37,7 +37,7 @@ start_time = time.time()
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f5"
+fidelity = "f3"
 
 # Define a PDE model: governing equations and boundary conditions
 pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
@@ -52,14 +52,14 @@ parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     # date formatting: year-month-day hr-min-sec
-    "date": "2008-10-21 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 10 * u.s,  # time step (seconds)
-    "t_simulation": 4 * u.d,  # length of simulation (days)
+    "date": "2014-03-20 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "t_step": 20 * u.s,  # time step (seconds)
+    "t_simulation": 3 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
-    "longitude": -117.1611*u.deg,  # longitude coordinates (These are San Diego coordinates!)
-    "latitude": 32.7157*u.deg,  # latitude coordinates (These are San Diego coordinates!)
-    "euv_efficiency": 0.3,  # EUV efficiency
+    "longitude": -71.4883*u.deg,  # longitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
+    "latitude": 42.63470*u.deg,  # latitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
+    "euv_efficiency": 0.25,  # EUV efficiency
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
@@ -70,31 +70,30 @@ parameters = {
     "exp_mu": 0.5,  # exponential of reference mu
     "exp_kappa": 0.69,  # exponential of reference kappa
     "tau_a": 5,  # parameter relating to solver. # todo: define this better.
-    "ref_mu_scale": 2,  # multiply the reference value of the dynamic viscosity by this value
-    "ref_kappa_scale": 0.5,  # multiply the reference value of the thermal conductivity by this value
-    "ref_rho_scale": 1,  # multiply the reference value of the density by this value
-    "p_order": 1,  # order of polynomial in solver
-    "t_order": 1,  # Runge-Kutta integrator order.
-    "n_stage": 1,  # Runge-Kutta number of stages order.
-    "resolution": 20,  # set one-dimensional mesh resolution
+    "ref_mu_scale": 5,  # multiply the reference value of the dynamic viscosity by this value
+    "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
+    "p_order": 2,  # order of polynomial in solver
+    "t_order": 2,  # Runge-Kutta integrator order.
+    "n_stage": 2,  # Runge-Kutta number of stages order.
+    "resolution": 30,  # set one-dimensional mesh resolution
     "ext_stab": 1,  # solver parameter # todo: understand this better.
     "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
     "linear_solver_tol": 1e-16,  # GMRES (linear solver) solver tolerance
     "linear_solver_iter": 40,  # GMRES (linear solver) solver iterations
     "pre_cond_matrix_type": 2,  # preconditioning type
-    "newton_tol": 1e-10,  # newton tolerance
+    "newton_tol": 1e-16,  # newton tolerance
     "newton_iter": 2,  # newton iterations
     "mat_vec_tol": 1e-6,  # todo: define
-    "rb_dim": 10,  # todo: define
+    "rb_dim": 8,  # todo: define
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
     "F10p7_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty
     "F10p7-81_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
     "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
-    "nu_eddy": 20,  # eddy viscosity
-    "alpha_eddy": 20,  # eddy conductivity
+    "nu_eddy": 100,  # eddy viscosity
+    "alpha_eddy": 10,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
     "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation
     "n_latitude_MSIS": 35,  # number of mesh points in the longitude direction for MSIS simulation
@@ -111,13 +110,13 @@ pde = setcompilers(pde)
 pde, mesh, master, dmd = preprocessing(pde, mesh)
 
 # save model setup.
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/pde", pde)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/pde", pde)
 mesh_copy = copy.deepcopy(mesh)
 mesh_copy["boundaryexpr"] = None
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/mesh", mesh_copy)
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/master", master)
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/dmd", dmd)
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/parameters", parameters)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/mesh", mesh_copy)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/master", master)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/dmd", dmd)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/parameters", parameters)
 
 # generate source codes and store them in app folder
 # this is only when you change the pdemodel file. so we do not need this anymore.
@@ -130,7 +129,7 @@ compilerstr = compilecode(pde)
 runstr = runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt(os.getcwd() + "/solutions_CHAMP_2008/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
+np.savetxt(os.getcwd() + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 # solution dimensions: (s1) x (s2) x (s3) x  (s4)
@@ -140,7 +139,7 @@ np.savetxt(os.getcwd() + "/solutions_CHAMP_2008/" + str(fidelity) + "/time.txt",
 # s3 => number of elements of the grid (resolution)
 # s4 => number of saved time steps.
 sol = fetchsolution(pde, master, dmd, os.getcwd() + "/dataout")
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2008/" + str(fidelity) + "/sol.npy", sol)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/sol.npy", sol)
 
 # # copy all ouput files
 # source_folder = os.path.dirname(cdir) + "/dataout/"

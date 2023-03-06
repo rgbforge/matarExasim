@@ -108,7 +108,7 @@ def pdeparams(pde, mesh, parameters):
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
     kappa0 = parameters["ref_kappa_scale"] * kappa0
-    rho0 = parameters["ref_rho_scale"] * rho0
+    # rho0 = parameters["ref_rho_scale"] * rho0
 
     # define euv heating parameters
     # flux photos corresponding wavelength
