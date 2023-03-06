@@ -57,8 +57,8 @@ parameters = {
     "t_simulation": 3 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
-    "longitude": 254.75*u.deg,  # longitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
-    "latitude": 40.02*u.deg,  # latitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
+    "longitude": 254.75*u.deg,  # longitude coordinates todo: changed to Boulder from SD.
+    "latitude": 40.02*u.deg,  # latitude coordinates todo: changed to Boulder from SD.
     "euv_efficiency": 0.25,  # EUV efficiency
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
@@ -69,15 +69,15 @@ parameters = {
     "gamma": 5/3,  # ratio of specific heats
     "exp_mu": 0.5,  # exponential of reference mu
     "exp_kappa": 0.69,  # exponential of reference kappa
-    "tau_a": 5,  # parameter relating to solver. # todo: define this better.
+    "tau_a": 5,  # parameter relating to solver. todo: define this better.
     "ref_mu_scale": 5,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
     "p_order": 2,  # order of polynomial in solver
     "t_order": 2,  # Runge-Kutta integrator order.
     "n_stage": 2,  # Runge-Kutta number of stages order.
     "resolution": 30,  # set one-dimensional mesh resolution
-    "ext_stab": 1,  # solver parameter # todo: understand this better.
-    "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
+    "ext_stab": 1,  # solver parameter todo: understand this better.
+    "tau": 0.0,  # discontinuous galerkin stabilization parameter todo: Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
     "linear_solver_tol": 1e-16,  # GMRES (linear solver) solver tolerance
     "linear_solver_iter": 40,  # GMRES (linear solver) solver iterations
@@ -140,19 +140,6 @@ np.savetxt(os.getcwd() + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/ti
 # s4 => number of saved time steps.
 sol = fetchsolution(pde, master, dmd, os.getcwd() + "/dataout")
 np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/sol.npy", sol)
-
-# # copy all ouput files
-# source_folder = os.path.dirname(cdir) + "/dataout/"
-# destination_folder = os.path.dirname(cdir) + "/solutions_CHAMP_2001/" + str(fidelity) + "/dataout/"
-#
-# # fetch all files
-# for file_name in os.listdir(source_folder):
-#     print(file_name)
-#     # construct full file path
-#     source = source_folder + file_name
-#     destination = destination_folder + file_name
-#     # copy files.
-#     shutil.copy(source, destination)
 
 # get parameters
 rho0 = pde["physicsparam"][19]
