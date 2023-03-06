@@ -32,8 +32,8 @@ def pdeparams(pde, mesh, parameters):
     """
     # read in F10.7 data
     data = sw.sw_daily(update=True)
-    F10p7 = data.f107_adj[parameters["date"]] * (1E-22 * u.W * u.Hz / (u.m ** 2))
-    F10p7_81 = data.f107_81lst_adj[parameters["date"]] * (1E-22 * u.W * u.Hz / (u.m ** 2))
+    F10p7 = data.f107_adj[parameters["date"]]
+    F10p7_81 = data.f107_81lst_adj[parameters["date"]]
 
     # read input csv files
     euv = read_csv(parameters["EUV_input_file_directory"], header=None)
@@ -160,8 +160,8 @@ def pdeparams(pde, mesh, parameters):
                                     M.value,  # 5
                                     parameters["euv_efficiency"],  # 6
                                     declination_sun0,  # 7
-                                    (F10p7.value + parameters["F10p7_uncertainty"].value) * 1E22,  # 8
-                                    (F10p7_81.value + parameters["F10p7-81_uncertainty"].value) * 1E22,  # 9
+                                    (F10p7.value + parameters["F10p7_uncertainty"]),  # 8
+                                    (F10p7_81.value + parameters["F10p7-81_uncertainty"]),  # 9
                                     day_of_year,  # 10
                                     parameters["exp_mu"],  # 11
                                     parameters["exp_kappa"],  # 12

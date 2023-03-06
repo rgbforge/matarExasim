@@ -52,13 +52,13 @@ parameters = {
     "planet": "Earth",  # Planet
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     # date formatting: year-month-day hr-min-sec
-    "date": "2014-03-20 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "date": "2002-03-18 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_step": 20 * u.s,  # time step (seconds)
     "t_simulation": 3 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
-    "longitude": -71.4883*u.deg,  # longitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
-    "latitude": 42.63470*u.deg,  # latitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
+    "longitude": 254.75*u.deg,  # longitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
+    "latitude": 40.02*u.deg,  # latitude coordinates (These are San Diego coordinates!) # todo: changed to Boulder from SD.
     "euv_efficiency": 0.25,  # EUV efficiency
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
@@ -84,12 +84,12 @@ parameters = {
     "pre_cond_matrix_type": 2,  # preconditioning type
     "newton_tol": 1e-16,  # newton tolerance
     "newton_iter": 2,  # newton iterations
-    "mat_vec_tol": 1e-6,  # todo: define
+    "mat_vec_tol": 1e-8,  # todo: define
     "rb_dim": 8,  # todo: define
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
-    "F10p7_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # added factor F10.7 cm radio emissions
+    "F10p7_uncertainty": 0,  # added factor F10.7 cm radio emissions
     # measured in solar flux units uncertainty
-    "F10p7-81_uncertainty": 0 * (1E-22 * u.W*u.Hz/(u.m**2)),  # F10.7 of the last
+    "F10p7-81_uncertainty": 0,  # F10.7 of the last
     # 81-days measured in solar flux units uncertainty
     "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
     "nu_eddy": 100,  # eddy viscosity
@@ -110,13 +110,13 @@ pde = setcompilers(pde)
 pde, mesh, master, dmd = preprocessing(pde, mesh)
 
 # save model setup.
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/pde", pde)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/pde", pde)
 mesh_copy = copy.deepcopy(mesh)
 mesh_copy["boundaryexpr"] = None
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/mesh", mesh_copy)
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/master", master)
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/dmd", dmd)
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/parameters", parameters)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/mesh", mesh_copy)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/master", master)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/dmd", dmd)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/parameters", parameters)
 
 # generate source codes and store them in app folder
 # this is only when you change the pdemodel file. so we do not need this anymore.
@@ -129,7 +129,7 @@ compilerstr = compilecode(pde)
 runstr = runcode(pde, 1)
 
 # save time it took to run in sec.
-np.savetxt(os.getcwd() + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
+np.savetxt(os.getcwd() + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/time.txt", np.array([time.time() - start_time]))
 
 # get solution from output files in dataout folder
 # solution dimensions: (s1) x (s2) x (s3) x  (s4)
@@ -139,7 +139,7 @@ np.savetxt(os.getcwd() + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/
 # s3 => number of elements of the grid (resolution)
 # s4 => number of saved time steps.
 sol = fetchsolution(pde, master, dmd, os.getcwd() + "/dataout")
-np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Millstone/" + str(fidelity) + "/sol.npy", sol)
+np.save(os.path.dirname(cdir) + "/solutions_CHAMP_2002/Boulder/" + str(fidelity) + "/sol.npy", sol)
 
 # # copy all ouput files
 # source_folder = os.path.dirname(cdir) + "/dataout/"
