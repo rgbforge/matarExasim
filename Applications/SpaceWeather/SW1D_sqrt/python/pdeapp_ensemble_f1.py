@@ -91,9 +91,9 @@ for ii in range(np.shape(samples)[0]):
         "mat_vec_tol": 1e-6,  # todo: define
         "rb_dim": 8,  # todo: define
         "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
-        "F10p7_uncertainty": samples[ii, 5] * (1E-22 * u.W * u.Hz / (u.m ** 2)),  # added factor F10.7 cm radio emissions
+        "F10p7_uncertainty": samples[ii, 5],  # added factor F10.7 cm radio emissions
         # measured in solar flux units uncertainty
-        "F10p7-81_uncertainty": samples[ii, 6] * (1E-22 * u.W * u.Hz / (u.m ** 2)),  # F10.7 of the last
+        "F10p7-81_uncertainty": samples[ii, 6],  # F10.7 of the last
         # 81-days measured in solar flux units uncertainty
         "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
         "nu_eddy": samples[ii, 7],  # eddy viscosity

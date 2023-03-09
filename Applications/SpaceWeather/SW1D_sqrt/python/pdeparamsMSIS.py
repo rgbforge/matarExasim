@@ -1,5 +1,6 @@
 """ Module to define the model input parameters driven by solar conditions.
-Latest update: Feb 25th, 2023 [OI]
+
+Latest update: March 7th, 2023 [OI]
 """
 import numpy as np
 from pandas import read_csv
@@ -9,6 +10,8 @@ from initial_condition_1D_pressure import MSIS_initial_condition_1D_pressure
 from astropy.constants import G, k_B, h, M_earth, R_earth, c
 import astropy.units as u
 import spaceweather as sw
+from pdemodelMSIS import EUVsource1D
+import matplotlib.pyplot as plt
 import os
 import sys
 from datetime import date
@@ -108,7 +111,6 @@ def pdeparams(pde, mesh, parameters):
     # rescale mu0, kappa0, rho0
     mu0 = parameters["ref_mu_scale"] * mu0
     kappa0 = parameters["ref_kappa_scale"] * kappa0
-    # rho0 = parameters["ref_rho_scale"] * rho0
 
     # define euv heating parameters
     # flux photos corresponding wavelength
@@ -160,8 +162,8 @@ def pdeparams(pde, mesh, parameters):
                                     M.value,  # 5
                                     parameters["euv_efficiency"],  # 6
                                     declination_sun0,  # 7
-                                    (F10p7.value + parameters["F10p7_uncertainty"]),  # 8
-                                    (F10p7_81.value + parameters["F10p7-81_uncertainty"]),  # 9
+                                    F10p7 + parameters["F10p7_uncertainty"],  # 8
+                                    F10p7_81 + parameters["F10p7-81_uncertainty"],  # 9
                                     day_of_year,  # 10
                                     parameters["exp_mu"],  # 11
                                     parameters["exp_kappa"],  # 12
@@ -252,4 +254,47 @@ def pdeparams(pde, mesh, parameters):
             udg[node, :, elem] = u0[n_points_per_element * elem + node, :]
 
     mesh['udg'] = udg
+
+    # # todo: testing EUV heating!!! please delete me after debugging :)
+    # t = 0
+    # # sol = np.zeros((n_points_per_element, n_elements, len(pde["soltime"])))
+    # # # loop over all timesteps.
+    # # for tt in range(len(pde["soltime"])):
+    # #     index_t = pde["soltime"][tt]
+    # #     t += pde["saveSolFreq"].value*pde["dt"][int(index_t)][0]
+    # #     for i_elem in range(n_elements):
+    # #         for i_point in range(n_points_per_element):
+    # #             euv_output = EUVsource1D(u=mesh["udg"][i_point, :, i_elem], x=mesh["dgnodes"][i_point, :, i_elem],
+    # #                                      t=t, mu=pde["physicsparam"], eta=pde['externalparam'].value)
+    # #
+    # #             sol[i_point, i_elem, tt] = euv_output
+    # #
+    # #
+    # #
+    # # np.save("sol.npy", sol)
+    # sol = np.zeros((n_points_per_element, n_elements))
+    # t = 60*60*12/t0.value
+    # for i_elem in range(n_elements):
+    #     if i_elem == 10:
+    #         print("stop here ")
+    #     for i_point in range(n_points_per_element):
+    #         euv_output = EUVsource1D(u=mesh["udg"][i_point, :, i_elem], x=mesh["dgnodes"][i_point, :, i_elem],
+    #                                  t=t, mu=pde["physicsparam"], eta=pde['externalparam'].value)
+    #
+    #         sol[i_point, i_elem] = euv_output
+    #
+    # fig = plt.figure(figsize=(10, 5))
+    # ax = fig.add_subplot(111)
+    # number_of_plots = 1
+    # colormap = plt.cm.nipy_spectral
+    # colors = colormap(np.linspace(0, 1, number_of_plots))
+    # ax.set_prop_cycle('color', colors)
+    # t = 0
+    # skip = 0
+    # ax.plot(altitude_mesh_grid, sol[:, :].flatten("F"), label="t = " + str(round(t, 2)))
+    # ax.legend()
+    # ax.set_xlabel("Altitude [km]")
+    # ax.set_ylabel("source term output")
+    # plt.show()
+
     return pde, mesh

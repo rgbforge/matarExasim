@@ -15,10 +15,10 @@ matplotlib.rc('ytick', labelsize=13)
 
 # specify model input parameters for summer solstice.
 parameters = {
-    "date": "2004-04-10 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
+    "date": "2002-03-18 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
     "t_restart": 0,  # restart at given time step (discrete value)
-    "longitude": -117.1611 * u.deg,  # longitude coordinates # todo: try San Diego coords (lat=32.7157, lon=-117.1611)
-    "latitude": 32.7157 * u.deg,  # latitude coordinates
+    "longitude": 254.75*u.deg,  # longitude coordinates todo: changed to Boulder from SD.
+    "latitude": 40.02*u.deg,  # latitude coordinates todo: changed to Boulder from SD.
     "neutrals_input_file_directory": "../inputs/neutrals.csv",  # neutrals input file location
     "chemical_species": ["O", "N2", "O2", "He"],  # chemical species.
     "altitude_lower": (100 * u.km).to(u.m),  # computational domain altitude lower bound (meters)

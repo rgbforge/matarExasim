@@ -1,7 +1,7 @@
 """ Module including the 1D GITM sqrt-MSIS formulation flux and source functions.
 Latest update: Feb 25th, 2023. [OI]
 """
-from numpy import *
+from numpy import array, hstack, reshape
 from sympy import exp, sqrt, log, pi, tanh, sin, cos, asin, zeros
 
 
@@ -91,7 +91,7 @@ def fbou(u, q, w, v, x, t, mu, eta, uhat, n, tau):
 
     f1i = fluxInviscid(uhat, x, mu, eta)
     f1v = fluxViscous(uhat, q, x, mu, eta)
-    f = (f1i + f1v) * n[0]
+    f = (f1i + f1v) * n[0]  # todo test this! why is n a vector?
     fl0 = f[0] + tau[0] * (u[0] - uhat[0])
     fl1 = f[1] + tau[1] * (u[1] - uhat[1])
     fl2 = f[2] + tau[2] * (u[2] - uhat[2])
@@ -165,8 +165,9 @@ def initu(x, mu, eta):
     rtilde = logp_p0 - log(T) + log(mw)
     rho = exp(rtilde)
     srT = sqrt(rho) * T
-
-    u0 = array([rtilde, 0.0, srT])
+    # todo: just testing
+    # u0 = array([rtilde, 0.0, srT])
+    u0 = array([0, 0.0, 0])
     return u0
 
 
@@ -353,17 +354,24 @@ def EUVsource1D(u, x, t, mu, eta):
 
     alpha = IcosChi * alpha1 + (1 - IcosChi) * (IsinChi * alpha2 + (1 - IsinChi) * 1e2)
 
-    Chi = zeros(nspecies, 1)
+    # initialize the species density
+    Chi = zeros(nspecies)
+    # initialize for atomic oxygen
     Chi[0] = 1.0
+    # loop over all other species
     for iSpecies in range(2, nspecies + 1):
-        coeffsDensity = eta[(3 + nspecies) * nWaves + 4 * (iSpecies - 2):(3 + nspecies) * nWaves + 4 * (iSpecies - 1)]
-        Chi[iSpecies - 1] = coeffsDensity[0] * exp(coeffsDensity[1] * (r - R0) * H0) + coeffsDensity[2] * exp(
-            coeffsDensity[3] * (r - R0) * H0)
+        # added .value since the object is a python "quantity"
+        coeffs_density = eta[(3 + nspecies) * nWaves + 4 * (iSpecies - 2):(3 + nspecies) * nWaves + 4 * (iSpecies - 1)]
+        # evaluate exponential model.
+        Chi[iSpecies - 1] = coeffs_density[0] * exp(coeffs_density[1] * (r - R0) * H0) + coeffs_density[2] * exp(
+            coeffs_density[3] * (r - R0) * H0)
+        # update atomic oxygen density
         Chi[0] = Chi[0] - Chi[iSpecies - 1]
 
     mass = eta[(3 + nspecies) * nWaves + 4 * (nspecies - 1):(3 + nspecies) * nWaves + 4 * (nspecies - 1) + nspecies]
     # Alert: new change for consistency with total mass (not pushed yet in the Matlab version)
     mw = 0.0
+
     for iSpecies in range(0, nspecies):
         mw = mw + Chi[iSpecies] / mass[iSpecies]
     mw = 1 / mw
@@ -376,7 +384,7 @@ def EUVsource1D(u, x, t, mu, eta):
 
     for iSpecies in range(0, nspecies):
         Q = 0
-        crossSection = eta[(3 + iSpecies - 1) * nWaves:(3 + iSpecies) * nWaves]
+        crossSection = eta[(3 + iSpecies) * nWaves: (4 + iSpecies) * nWaves]
         tau = M0 * Chi[iSpecies] * crossSection * alpha / mass[iSpecies]
         slope0 = 1 + AFAC * (F10p7_mean - 80)
         for iWave in range(0, nWaves):

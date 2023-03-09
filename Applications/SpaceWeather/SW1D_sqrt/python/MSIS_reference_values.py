@@ -235,5 +235,4 @@ def MSIS_reference_values(parameters, mass):
         raise ValueError("non-physical initial condition (negative for atomic oxygen). This is most likely due "
                          "to the exponential model parameter fit. "
                          "We recommend changing the initialization in the nonlinear least squares optimization.")
-
     return density_mean_total[0], T0, chi, c_chi

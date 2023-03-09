@@ -1,6 +1,6 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
 
-Latest update: March 2nd, 2022. [OI]
+Latest update: March 7th, 2023. [OI]
 """
 # import external modules
 import os
@@ -26,6 +26,9 @@ from setcompilers import setcompilers
 from runcode import runcode
 sys.path.append(cdir[:(ii + 6)] + "/src/Python/Postprocessing/")
 from fetchsolution import fetchsolution
+
+# todo: remove later this is for debugging.
+sys.setrecursionlimit(100000)
 
 # save everything outside of dir.
 os.chdir('../')
@@ -53,13 +56,13 @@ parameters = {
     "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
     # date formatting: year-month-day hr-min-sec
     "date": "2002-03-18 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 20 * u.s,  # time step (seconds)
+    "t_step": 30 * u.s,  # time step (seconds)
     "t_simulation": 3 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
     "longitude": 254.75*u.deg,  # longitude coordinates todo: changed to Boulder from SD.
     "latitude": 40.02*u.deg,  # latitude coordinates todo: changed to Boulder from SD.
-    "euv_efficiency": 0.25,  # EUV efficiency
+    "euv_efficiency": 0.205,  # EUV efficiency
     "altitude_lower": (100*u.km).to(u.m),  # computational domain altitude lower bound (meters)
     "altitude_upper": (600*u.km).to(u.m),  # computational domain altitude upper bound (meters)
     "lambda0": 1e-9 * u.m,  # reference euv wavelength (meter)
@@ -68,32 +71,30 @@ parameters = {
     "neutrals_input_file_directory": str(os.getcwd()) + "/inputs/neutrals.csv",  # neutrals input file location
     "gamma": 5/3,  # ratio of specific heats
     "exp_mu": 0.5,  # exponential of reference mu
-    "exp_kappa": 0.69,  # exponential of reference kappa
-    "tau_a": 5,  # parameter relating to solver. todo: define this better.
+    "exp_kappa": 0.75,  # exponential of reference kappa
+    "tau_a": 5,  # discontinuous galerkin stabilization parameter for advection (const.).
     "ref_mu_scale": 5,  # multiply the reference value of the dynamic viscosity by this value
-    "ref_kappa_scale": 1,  # multiply the reference value of the thermal conductivity by this value
+    "ref_kappa_scale": 0.485,  # multiply the reference value of the thermal conductivity by this value
     "p_order": 2,  # order of polynomial in solver
-    "t_order": 2,  # Runge-Kutta integrator order.
-    "n_stage": 2,  # Runge-Kutta number of stages order.
-    "resolution": 30,  # set one-dimensional mesh resolution
-    "ext_stab": 1,  # solver parameter todo: understand this better.
-    "tau": 0.0,  # discontinuous galerkin stabilization parameter todo: Jordi, what is tau_a vs tau?
+    "t_order": 2,  # Runge-Kutta integrator order
+    "n_stage": 2,  # Runge-Kutta number of stages order
+    "resolution": 28,  # set one-dimensional mesh resolution
+    "ext_stab": 1,  # solver parameter
+    "tau": 0.0,  # discontinuous galerkin stabilization parameter  # Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
     "linear_solver_tol": 1e-16,  # GMRES (linear solver) solver tolerance
-    "linear_solver_iter": 40,  # GMRES (linear solver) solver iterations
+    "linear_solver_iter": 30,  # GMRES (linear solver) solver iterations
     "pre_cond_matrix_type": 2,  # preconditioning type
-    "newton_tol": 1e-16,  # newton tolerance
+    "newton_tol": 1e-10,  # newton tolerance
     "newton_iter": 2,  # newton iterations
-    "mat_vec_tol": 1e-8,  # todo: define
-    "rb_dim": 8,  # todo: define
+    "mat_vec_tol": 1e-6,  # the tolerance for matrix vector product in the nonlinear solver
+    "rb_dim": 8,  # number of reduced basis dimensions of the initial condition
     "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
-    "F10p7_uncertainty": 0,  # added factor F10.7 cm radio emissions
-    # measured in solar flux units uncertainty
-    "F10p7-81_uncertainty": 0,  # F10.7 of the last
-    # 81-days measured in solar flux units uncertainty
-    "chemical_species": ["O", "N2", "O2", "He"],  # chemical species we are solving for
-    "nu_eddy": 100,  # eddy viscosity
-    "alpha_eddy": 10,  # eddy conductivity
+    "F10p7_uncertainty": 0,  # added factor F10.7 cm radio emissions measured in solar flux units uncertainty
+    "F10p7-81_uncertainty": 0,  # F10.7 of the last 81-days measured in solar flux units uncertainty
+    "chemical_species": ["O", "N2", "O2", "He"],  # chemical neutral species
+    "nu_eddy": 1000,  # eddy viscosity
+    "alpha_eddy": 22,  # eddy conductivity
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
     "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation
     "n_latitude_MSIS": 35,  # number of mesh points in the longitude direction for MSIS simulation
