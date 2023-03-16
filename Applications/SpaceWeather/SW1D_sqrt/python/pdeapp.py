@@ -1,6 +1,6 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
 
-Latest update: March 7th, 2023. [OI]
+Latest update: March 15th, 2023. [OI]
 """
 # import external modules
 import os
@@ -27,9 +27,6 @@ from runcode import runcode
 sys.path.append(cdir[:(ii + 6)] + "/src/Python/Postprocessing/")
 from fetchsolution import fetchsolution
 
-# todo: remove later this is for debugging.
-sys.setrecursionlimit(100000)
-
 # save everything outside of dir.
 os.chdir('../')
 
@@ -40,7 +37,7 @@ start_time = time.time()
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f3"
+fidelity = "f5"
 
 # Define a PDE model: governing equations and boundary conditions
 pde['model'] = "ModelD"  # ModelC, ModelD, ModelW
@@ -52,11 +49,11 @@ pde['mpiprocs'] = 1  # number of MPI processors
 
 # specify model input parameters for summer solstice.
 parameters = {
-    "planet": "Earth",  # Planet
-    "coord": "2",  # (0:Cartesian, 1:cylindrical, 2:spherical)
+    "planet": "Earth",  # planet
+    "coord": "2",  # 0=cartesian, 1=cylindrical, 2=spherical
     # date formatting: year-month-day hr-min-sec
     "date": "2002-03-18 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-    "t_step": 30 * u.s,  # time step (seconds)
+    "t_step": 5 * u.s,  # time step (seconds)
     "t_simulation": 3 * u.d,  # length of simulation (days)
     "frequency_save": 30 * u.min,  # frequency of data (minutes)
     "t_restart": 0,  # restart at given time step (discrete value)
@@ -75,10 +72,10 @@ parameters = {
     "tau_a": 5,  # discontinuous galerkin stabilization parameter for advection (const.).
     "ref_mu_scale": 5,  # multiply the reference value of the dynamic viscosity by this value
     "ref_kappa_scale": 0.485,  # multiply the reference value of the thermal conductivity by this value
-    "p_order": 2,  # order of polynomial in solver
+    "p_order": 1,  # order of polynomial in solver
     "t_order": 2,  # Runge-Kutta integrator order
-    "n_stage": 2,  # Runge-Kutta number of stages order
-    "resolution": 28,  # set one-dimensional mesh resolution
+    "n_stage": 1,  # Runge-Kutta number of stages order
+    "resolution": 30,  # set one-dimensional mesh resolution
     "ext_stab": 1,  # solver parameter
     "tau": 0.0,  # discontinuous galerkin stabilization parameter  # Jordi, what is tau_a vs tau?
     "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
@@ -98,7 +95,7 @@ parameters = {
     "n_radial_MSIS": 101,   # number of mesh points in the radial direction for MSIS simulation
     "n_longitude_MSIS": 72,  # number of mesh points in the longitude direction for MSIS simulation
     "n_latitude_MSIS": 35,  # number of mesh points in the longitude direction for MSIS simulation
-    "initial_dr": 0.5 * u.km  # mesh offset used to measure derivatives in initial condition 1D pressure.
+    "initial_dr": 0.5 * u.km  # mesh offset used to measure derivatives in initial condition 1D pressure
 }
 
 # run executable file to compute solution and store it in dataout folder

@@ -462,7 +462,6 @@ def thermalConductivity(x, mu, eta):
             coeffsDensity[3] * (r - R0) * H0)
         Chi[0] = Chi[0] - Chi[iSpecies - 1]
 
-    # todo: switch back!!!! Jordi, is this switched back?
     kappa = 0.0
     ckappai = eta[(3 + nspecies) * nWaves + 4 * (nspecies - 1) + nspecies:(3 + nspecies) * nWaves + 4 * (
                 nspecies - 1) + 2 * nspecies]
