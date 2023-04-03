@@ -1,6 +1,6 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
 
-Latest update: March 6th, 2022. [OI]
+Latest update: April 3rd, 2022. [OI]
 """
 # import external modules
 import os
@@ -29,7 +29,7 @@ sys.path.append(cdir[:(ii + 6)] + "/src/Python/Postprocessing/")
 from fetchsolution import fetchsolution
 
 # save everything outside of dir.
-os.chdir('../')
+os.chdir('../../')
 
 # start timer
 start_time = time.time()
@@ -38,7 +38,7 @@ start_time = time.time()
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f1"
+fidelity = "f3"
 
 samples = np.load(os.path.dirname(cdir) + "/sensitivity/samples/test_mfmc_50.npy")
 
@@ -57,7 +57,7 @@ for ii in range(np.shape(samples)[0]):
         "coord": "2",  # (0 => cartesian, 1 => cylindrical, 2 => spherical)
         # date formatting: year-month-day hr-min-sec
         "date": "2002-03-18 00:00:00",  # read in data for this day, i.e. F10.7 measurements. year-month-day hr:min:sec
-        "t_step": 10 * u.s,  # time step (seconds)
+        "t_step": 20 * u.s,  # time step (seconds)
         "t_simulation": 3 * u.d,  # length of simulation (days)
         "frequency_save": 30 * u.min,  # frequency of data (minutes)
         "t_restart": 0,  # restart at given time step (discrete value)
@@ -76,10 +76,10 @@ for ii in range(np.shape(samples)[0]):
         "tau_a": 5,  # parameter relating to solver. # todo: define this better.
         "ref_mu_scale": samples[ii, 0],  # multiply the reference value of the dynamic viscosity by this value
         "ref_kappa_scale": samples[ii, 1],  # multiply the reference value of the thermal conductivity by this value
-        "p_order": 3,  # order of polynomial in solver
-        "t_order": 3,  # Runge-Kutta integrator order.
-        "n_stage": 3,  # Runge-Kutta number of stages order.
-        "resolution": 40,  # set one-dimensional mesh resolution
+        "p_order": 2,  # order of polynomial in solver
+        "t_order": 2,  # Runge-Kutta integrator order.
+        "n_stage": 2,  # Runge-Kutta number of stages order.
+        "resolution": 15,  # set one-dimensional mesh resolution
         "ext_stab": 1,  # solver parameter # todo: understand this better.
         "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
         "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
@@ -88,8 +88,8 @@ for ii in range(np.shape(samples)[0]):
         "pre_cond_matrix_type": 2,  # preconditioning type
         "newton_tol": 1e-16,  # newton tolerance
         "newton_iter": 2,  # newton iterations
-        "mat_vec_tol": 1e-6,  # todo: define
-        "rb_dim": 8,  # todo: define
+        "mat_vec_tol": 1e-6,  # matrix vector product tolerance
+        "rb_dim": 8,  # reduced basis dimensions in preconditioner
         "boundary_epsilon": 1e-3,  # boundary epsilon for mesh
         "F10p7_uncertainty": samples[ii, 5],  # added factor F10.7 cm radio emissions
         # measured in solar flux units uncertainty
@@ -125,7 +125,7 @@ for ii in range(np.shape(samples)[0]):
 
     # generate source codes and store them in app folder
     # this is only when you change the pdemodel file. so we do not need this anymore.
-    # gencode(pde)
+    gencode(pde)
 
     # compile source codes to build an executable file and store it in app folder
     compilerstr = compilecode(pde)

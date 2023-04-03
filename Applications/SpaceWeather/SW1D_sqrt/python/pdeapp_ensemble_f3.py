@@ -1,6 +1,6 @@
 """Module to run the 1D sqrt formulation of GITM (1D in altitude)
 
-Latest update: March 6th, 2022. [OI]
+Latest update: April 3rd, 2022. [OI]
 """
 # import external modules
 import os
@@ -114,7 +114,7 @@ for ii in range(np.shape(samples)[0]):
     pde, mesh, master, dmd = preprocessing(pde, mesh)
 
     # save model setup.
-    dir_name = os.path.dirname(cdir) + "/sensitivity/ensemble/f1/sample_" + str(ii) + "/"
+    dir_name = os.path.dirname(cdir) + "/sensitivity/ensemble/" + str(fidelity) + "/sample_" + str(ii) + "/"
     np.save(dir_name + "pde.npy", pde)
     mesh_copy = copy.deepcopy(mesh)
     mesh_copy["boundaryexpr"] = None

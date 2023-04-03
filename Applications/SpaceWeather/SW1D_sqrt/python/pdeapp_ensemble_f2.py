@@ -38,7 +38,7 @@ start_time = time.time()
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f1"
+fidelity = "f2"
 
 samples = np.load(os.path.dirname(cdir) + "/sensitivity/samples/test_mfmc_50.npy")
 
@@ -78,8 +78,8 @@ for ii in range(np.shape(samples)[0]):
         "ref_kappa_scale": samples[ii, 1],  # multiply the reference value of the thermal conductivity by this value
         "p_order": 3,  # order of polynomial in solver
         "t_order": 3,  # Runge-Kutta integrator order.
-        "n_stage": 3,  # Runge-Kutta number of stages order.
-        "resolution": 40,  # set one-dimensional mesh resolution
+        "n_stage": 2,  # Runge-Kutta number of stages order.
+        "resolution": 30,  # set one-dimensional mesh resolution
         "ext_stab": 1,  # solver parameter # todo: understand this better.
         "tau": 0.0,  # discontinuous galerkin stabilization parameter # todo: Jordi, what is tau_a vs tau?
         "GMRES_restart": 29,  # number of GMRES (linear solver) restarts
