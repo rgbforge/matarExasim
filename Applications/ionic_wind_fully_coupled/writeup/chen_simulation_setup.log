@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.3.23)  9 APR 2023 20:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.3.23)  19 APR 2023 19:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -399,23 +399,28 @@ LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 19
  (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ppl.fd
 File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
 ) [3]
-Underfull \hbox (badness 10000) in paragraph at lines 228--230
+Underfull \hbox (badness 10000) in paragraph at lines 239--241
 
  []
 
-[4] [5]
-Overfull \hbox (26.24391pt too wide) in paragraph at lines 301--309
+[4]
+Overfull \hbox (14.58069pt too wide) detected at line 269
+[]
+ []
+
+[5]
+Overfull \hbox (26.24391pt too wide) in paragraph at lines 312--320
  [][] 
  []
 
 [6
 
 ]
-Overfull \hbox (26.24391pt too wide) in paragraph at lines 330--338
+Overfull \hbox (26.24391pt too wide) in paragraph at lines 341--349
  [][] 
  []
 
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 344.
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 355.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ) [7
@@ -428,12 +433,12 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 <indicator_fcn.png, id=472, 1146.2825pt x 907.39pt>
 File: indicator_fcn.png Graphic file (type png)
 <use indicator_fcn.png>
-Package pdftex.def Info: indicator_fcn.png  used on input line 696.
+Package pdftex.def Info: indicator_fcn.png  used on input line 707.
 (pdftex.def)             Requested size: 375.80542pt x 297.48738pt.
 <exasim_bc_index.png, id=475, 2068.72874pt x 1269.74374pt>
 File: exasim_bc_index.png Graphic file (type png)
 <use exasim_bc_index.png>
-Package pdftex.def Info: exasim_bc_index.png  used on input line 704.
+Package pdftex.def Info: exasim_bc_index.png  used on input line 715.
 (pdftex.def)             Requested size: 465.06001pt x 285.42815pt.
 
 
@@ -452,7 +457,7 @@ Here is how much of TeX's memory you used:
  14 hyphenation exceptions out of 8191
  60i,17n,63p,559b,1860s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on chen_simulation_setup.pdf (17 pages, 830819 bytes).
+Output written on chen_simulation_setup.pdf (17 pages, 836556 bytes).
 PDF statistics:
  658 PDF objects out of 1000 (max. 8388607)
  593 compressed objects within 6 object streams

@@ -1,7 +1,7 @@
 # Fdb version 3
-["pdflatex"] 1681086681 "/home/saustin/Documents/exasim_new/Exasim/Applications/ionic_wind_fully_coupled/writeup/chen_simulation_setup.tex" "chen_simulation_setup.pdf" "chen_simulation_setup" 1681086682
+["pdflatex"] 1681948071 "/home/saustin/Documents/exasim_new/Exasim/Applications/ionic_wind_fully_coupled/writeup/chen_simulation_setup.tex" "chen_simulation_setup.pdf" "chen_simulation_setup" 1681948072
   "/etc/texmf/web2c/texmf.cnf" 1679550201 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/saustin/Documents/exasim_new/Exasim/Applications/ionic_wind_fully_coupled/writeup/chen_simulation_setup.tex" 1681086681 27097 000a49d16bbc8cb3c268a9fcdd49d165 ""
+  "/home/saustin/Documents/exasim_new/Exasim/Applications/ionic_wind_fully_coupled/writeup/chen_simulation_setup.tex" 1681948071 27785 9e26c9639830c86f30130ee1b54c9bcd ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/courier/pcrr7t.tfm" 1136768653 960 379cc0019370a9e0208a0a3f949f847a ""
@@ -139,9 +139,9 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1644012257 39432 7155514e09a3d69036fac785183a21c2 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1679550294 4036811 4cb80868003c86b962b6b5ae1e1e2902 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1679550297 1405647 a1ac780a6d059da0fd7375d8f54e86ce ""
-  "chen_simulation_setup.aux" 1681086682 3822 9514d6ecd76019db2149b35fb9262fb6 "pdflatex"
-  "chen_simulation_setup.out" 1681086682 1991 908d1c6645e8d207a0dc963afa7c4751 "pdflatex"
-  "chen_simulation_setup.tex" 1681086681 27097 000a49d16bbc8cb3c268a9fcdd49d165 ""
+  "chen_simulation_setup.aux" 1681948072 3822 9514d6ecd76019db2149b35fb9262fb6 "pdflatex"
+  "chen_simulation_setup.out" 1681948072 1991 908d1c6645e8d207a0dc963afa7c4751 "pdflatex"
+  "chen_simulation_setup.tex" 1681948071 27785 9e26c9639830c86f30130ee1b54c9bcd ""
   "exasim_bc_index.png" 1678890817 473669 03fa3629f340c885dc2b67190096e7a5 ""
   "indicator_fcn.png" 1678890817 34677 9f3351e722a13231a03b816d557ffcff ""
   (generated)

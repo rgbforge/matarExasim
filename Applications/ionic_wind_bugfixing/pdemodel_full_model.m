@@ -134,7 +134,7 @@ function s = source(u, q, w, v, x, t, mu, eta)
     s1 = (alpha-eta)*r_tip*ne*normE - beta*epsilon0/(e*mue)*ne*np;
     s2 = alpha*r_tip*ne*normE - beta*epsilon0*np/(e*mue) *(nn + ne);
     s3 = eta*r_tip*ne*normE - beta*epsilon0/(e*mue)*nn*np;
-    s4 = np-ne-nn;
+    s4 = ne+nn-np;  % Added the minus sign
 
     s = [s1, s2, s3, s4];
 end

@@ -18,27 +18,28 @@ pde.modelfile = "pdemodel_electrons_only";    % name of a file defining the PDE 
 pde.mpiprocs = 5;              % number of MPI processors
 
 % Physical parameters
-Kep = 2e-13;             % mu[1] Recombination coeff - pos and neg ions [m^3/s]
-Knp = 2e-13;             % mu[2] Recombination coeff - pos ions and electrons [m^3/s]
-mu_p = 2.43e-4;          % mu[3] Pos ion mobility [m^2/(Vs)]
-mu_n = 2.7e-4;           % mu[4] Neg mobility [m^2/(Vs)]
-De = 0.18;               % mu[5] Electron diffusion coefficient [m^2/s]
-Dp = 0.028e-4;           % mu[6] Pos ion diffusion coefficient [m^2/s]
-Dn = 0.043e-4;           % mu[7] Neg diffusion coefficient [m^2/s]
-Nmax = 1e16;             % mu[8] Max number density for initial charge distribution [particles/m^3]
 r0 = 0.0;                % mu[9] r-pos of emitter tip in reference frame [m]
-z0 = 0.045;              % mu[10]z-pos of emitter tip in reference frame [m]
-s0 = 1e-2;               % mu[11]Std deviation of initial charge distribution [m]
+z0 = 0.0;                % mu[10]z-pos of emitter tip in reference frame [m]
+s0 = 25e-6;               % mu[11]Std deviation of initial charge distribution [m]
+Nmax = 1e16;             % mu[8] Max number density for initial charge distribution [particles/m^3]
 e = 1.6022e-19;          % mu[12]Charge on electron [C]
-epsilon = 8.854e-12;     % mu[13]absolute permittivity of air [C^2/(N*m^2)]
+epsilon0 = 8.854e-12;     % mu[13]absolute permittivity of air [C^2/(N*m^2)] or [m-3 kg-1 s4 A2]
 Ua = -10e3;              % mu[14]Emitter potential relative to ground [V]
 gamma = 0.001;           % mu[15]Secondary electron emission coefficient [1/m]
 E_bd = 3e6;              % mu[16]Breakdown E field in air [V/m]
 r_tip = 220e-6;          % mu[17] Tip radius of curvature [m]
+n_ref = epsilon0*E_bd/(e*r_tip);     % Yes, this is redundant and could be recomputed from the above variables. But it saves having to recompute it each time in the functions.
+
+P = 101325; % Pa
+V = 1; % m^3
+T = 273.15; % K
+k_b = 1.380649e-23; % m2 kg s-2 K-1
+N = P*V/(k_b*T);     % Neutral number density
+mue_ref = 0.04266918357567234;    % Took out the minus sign
 
 % Set discretization parameters, physical parameters, and solver parameters
-              %     1     2    3     4     5  6   7    8    9   10  11  12   13     14   15     16     17
-pde.physicsparam = [Kep, Knp, mu_p, mu_n, De, Dp, Dn, Nmax, r0, z0, s0, e, epsilon, Ua, gamma, E_bd, r_tip];
+              %     1   2    3   4    5      6     7     8     9      10    11    12,   13
+pde.physicsparam = [r0, z0, s0, Nmax, e, epsilon0, Ua, gamma, E_bd, r_tip, n_ref, N, mue_ref];
 pde.tau = 1.0;           % DG stabilization parameter
 
 % set indices to obtain v from the solutions of the other PDE models 
@@ -57,7 +58,7 @@ pde.ppdegree = 0;      % polynomial preconditioner degree -> set to 0 because we
 % solver parameters
 pde.torder = 1;          % time-stepping order of accuracy
 pde.nstage = 1;          % time-stepping number of stages
-pde.dt = 1.0e-5*ones(1,30);   % time step sizes
+pde.dt = 1.0e-5*ones(1,10);   % time step sizes - will want to change this eventually but leave it as-is for now.
 pde.visdt = 1.0;        % visualization timestep size
 pde.soltime = 1:pde.visdt:length(pde.dt); % steps at which solution are collected
 pde.GMRESrestart=200;            % number of GMRES restarts
@@ -95,7 +96,7 @@ mesh.boundaryexpr = {bdry1,
 mesh.boundarycondition = [2, 5, 5, 3, 4, 4, 1]; % Set boundary condition for each boundary
 
 load poisson_sol.mat sol;
-mesh.vdg = sol*-1;  % -1 because we are using a negative DC dischage while the solution was for a positive dirichlet BC
+mesh.vdg = sol*-Ua/(E_bd*r_tip);  % -1 because we are using a negative DC dischage while the solution was for a positive dirichlet BC
 % call exasim to generate and run C++ code to solve the PDE models
 [sol,pde,mesh,master,dmd,compilerstr,runstr] = exasim(pde,mesh);
 

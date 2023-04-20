@@ -34,6 +34,7 @@ V = 1; % m^3
 T = 273.15; % K
 k_b = 1.380649e-23; % m2 kg s-2 K-1
 N = P*V/(k_b*T);     % Neutral number density
+mue_ref = 0.04266918357567234;    % Took out the minus sign
 
 % Set discretization parameters, physical parameters, and solver parameters
               %     1   2    3   4    5      6     7     8     9      10    11    12
