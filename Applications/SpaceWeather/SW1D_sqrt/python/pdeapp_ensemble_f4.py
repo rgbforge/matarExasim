@@ -29,7 +29,7 @@ sys.path.append(cdir[:(ii + 6)] + "/src/Python/Postprocessing/")
 from fetchsolution import fetchsolution
 
 # save everything outside of dir.
-os.chdir('../../')
+os.chdir('../')
 
 # start timer
 start_time = time.time()
@@ -38,7 +38,7 @@ start_time = time.time()
 pde, mesh = initializeexasim()
 
 # fidelity
-fidelity = "f3"
+fidelity = "f4"
 
 samples = np.load(os.path.dirname(cdir) + "/sensitivity/samples/test_mfmc_50.npy")
 
@@ -115,6 +115,8 @@ for ii in range(np.shape(samples)[0]):
 
     # save model setup.
     dir_name = os.path.dirname(cdir) + "/sensitivity/ensemble/" + str(fidelity) + "/sample_" + str(ii) + "/"
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     np.save(dir_name + "pde.npy", pde)
     mesh_copy = copy.deepcopy(mesh)
     mesh_copy["boundaryexpr"] = None
@@ -145,3 +147,4 @@ for ii in range(np.shape(samples)[0]):
     # s4 => number of saved time steps.
     sol = fetchsolution(pde, master, dmd, os.getcwd() + "/dataout")
     np.save(dir_name + "sol.npy", sol)
+

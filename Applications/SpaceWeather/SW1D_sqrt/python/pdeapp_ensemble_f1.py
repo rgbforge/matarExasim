@@ -115,6 +115,8 @@ for ii in range(np.shape(samples)[0]):
 
     # save model setup.
     dir_name = os.path.dirname(cdir) + "/sensitivity/ensemble/" + str(fidelity) + "/sample_" + str(ii) + "/"
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     np.save(dir_name + "pde.npy", pde)
     mesh_copy = copy.deepcopy(mesh)
     mesh_copy["boundaryexpr"] = None
